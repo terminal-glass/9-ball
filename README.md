@@ -18,4 +18,4 @@ Pick the file for your computer.
 
 - [OSAMP Technical Whitepaper v0.81](OSAMP_Technical_Whitepaper_v0.81.pdf): the current protocol paper.
 - [OSAMP Engineering Introduction](OSAMP_Engineering_Introduction.pdf): one-page brief for reviewing engineers.
-Older versions and extra notes are in [additional-notes](additional-notes/).
+Older versions and extra notes are in [more](more/).

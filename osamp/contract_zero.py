@@ -42,19 +42,34 @@ def minimal_closure_capsule(capsule: dict[str, Any], disposition: str) -> dict[s
     return kept
 
 
-def assess_task(profile, task_class: str, scope: str, subtask_id: str | None) -> dict:
-    """Local rule only. This is not a measured 9-Ball benchmark."""
-    allowed = task_class in profile.allowed_task_classes
-    if allowed and scope == "bounded" and subtask_id:
+def assess_task(profile, task_class: str, scope: str, subtask_id: str | None, measurement: dict | None) -> dict:
+    """Use the published local measurement. This is not a cross-vendor ranking."""
+    if not measurement or "elapsed_ms" not in measurement or not measurement.get("measured_at"):
+        return {
+            "fit": "decline",
+            "subtask_id": None,
+            "plain": "No measured sample is published, so the fit is unknown.",
+        }
+    matches = (
+        task_class == measurement.get("task_class")
+        and scope == measurement.get("scope")
+        and subtask_id
+        and subtask_id == measurement.get("subtask_id")
+        and task_class in profile.allowed_task_classes
+    )
+    if matches:
         return {
             "fit": "bounded_subtask",
             "subtask_id": subtask_id,
-            "plain": f"This node can attempt the bounded step {subtask_id}.",
+            "plain": (
+                f"The measured sample covers the bounded step {subtask_id}. "
+                f"It took {measurement['elapsed_ms']} ms on {measurement['measured_at']}."
+            ),
         }
     return {
         "fit": "decline",
         "subtask_id": None,
-        "plain": "The offer is outside this node's published local profile, or it is not a bounded step.",
+        "plain": "The offer is outside the measured sample, or it is not that bounded step.",
     }
 
 

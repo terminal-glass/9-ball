@@ -366,7 +366,21 @@ class AgreementBook:
                 return role["status"]
         return None
 
-    def propose_project(self, objective: str, deliverables: list[str], required_checks: list[str], budget: int) -> str:
+    def propose_project(
+        self,
+        objective: str,
+        deliverables: list[str],
+        required_checks: list[str],
+        budget: int,
+        exclusions: list[str] | None = None,
+        completion_authority: str = "named human after the required checks pass",
+    ) -> str:
+        if not objective or not required_checks:
+            raise OsampError(
+                "schedule_incomplete",
+                "A project schedule needs an objective and at least one required check.",
+            )
+
         def run():
             return self._insert(
                 "work",
@@ -374,7 +388,9 @@ class AgreementBook:
                     "kind": "project",
                     "objective": objective,
                     "deliverables": deliverables,
+                    "exclusions": list(exclusions or []),
                     "required_checks": required_checks,
+                    "completion_authority": completion_authority,
                     "checks": {},
                     "budget": budget,
                     "spent": 0,
@@ -383,6 +399,17 @@ class AgreementBook:
             )
 
         return self._tx(run)
+
+    def project_schedule(self, agreement_id: str) -> dict:
+        body = self._get(agreement_id)["body"]
+        return {
+            "objective": body.get("objective"),
+            "deliverables": body.get("deliverables", []),
+            "exclusions": body.get("exclusions", []),
+            "required_checks": body.get("required_checks", []),
+            "budget": body.get("budget"),
+            "completion_authority": body.get("completion_authority"),
+        }
 
     def accept_work(self, agreement_id: str, person_id: str, key: bytes) -> dict:
         return self._tx(lambda: self._accept(agreement_id, person_id, key, "accept_work"))
@@ -452,10 +479,23 @@ class AgreementBook:
                     "budget": budget,
                     "spent": 0,
                     "outcome": "active",
+                    "stop_rules": ["solved", "human_satisfied", "held", "expired_or_closed"],
                 },
             )
 
         return self._tx(run)
+
+    def corridor_schedule(self, agreement_id: str) -> dict:
+        body = self._get(agreement_id)["body"]
+        return {
+            "stages": [
+                {"stage_id": stage["stage_id"], "recipient": stage["recipient"], "cost": stage["cost"]}
+                for stage in body.get("stages", [])
+            ],
+            "budget": body.get("budget"),
+            "stop_rules": list(body.get("stop_rules") or []),
+            "outcome": body.get("outcome"),
+        }
 
     def offer_corridor_stage(self, agreement_id: str) -> dict:
         def run():

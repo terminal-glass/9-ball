@@ -60,6 +60,18 @@ STAGES = {
             "Traceability rows for these schedules",
         ],
     },
+    "49-5": {
+        "title": "Acknowledgment, work schedules, measurement, and crash recovery",
+        "review": "REVIEW-5.md",
+        "tests": ["tests.test_stage_49_5"],
+        "pieces": [
+            "Human acknowledgment",
+            "Project schedule",
+            "Corridor schedule",
+            "Local measured sample for a bounded step",
+            "Recovery after a killed process",
+        ],
+    },
 }
 
 

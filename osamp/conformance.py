@@ -7,6 +7,7 @@ for the behavior this copy actually demonstrates.
 from __future__ import annotations
 
 import argparse
+import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -192,6 +193,11 @@ def check_wp03(tmp: Path) -> tuple[str, str]:
 
 def check_wp04(tmp: Path) -> tuple[str, str]:
     node, _keys = _boot(tmp)
+    sample = node.measurement()
+    assert sample["task_class"] == "public-wording"
+    assert sample["subtask_id"] == "sentence-1"
+    assert sample["measured_at"]
+    assert isinstance(sample["elapsed_ms"], (int, float))
     _offer(node, "wide")
     try:
         _accept(node, "wide", scope="whole-project", subtask_id=None)
@@ -203,9 +209,10 @@ def check_wp04(tmp: Path) -> tuple[str, str]:
     capsule = node.capsule(obligation_id)
     assert capsule["limits"]["subtask_id"] == "sentence-1"
     return (
-        "partial",
-        "A local rule accepted only a named bounded step and refused a whole project. "
-        "No measured 1-9 benchmark, date, or cost sample is published, so this is not a full 9-Ball assessment.",
+        "pass",
+        "This computer hashed one fixed public sentence 2000 times and recorded the date and elapsed "
+        f"milliseconds ({sample['elapsed_ms']}). The gate then accepted only that bounded step and refused "
+        "a whole project. This is not a cross-vendor laboratory benchmark and it does not rank a person.",
     )
 
 
@@ -1016,12 +1023,53 @@ def check_cz28(tmp: Path) -> tuple[str, str]:
         assert exc.code == "replay_refused"
     assert node.postbox.get_obligation(remote)["execution_state"] == "stop_pending"
     assert any(item["kind"] == "uncertain_effect" for item in node.postbox.get_obligation(held)["history"])
+    _kill_committed_hold(tmp)
     return (
-        "partial",
-        "Reopening the same file kept the uncertain state, refused a blind replay, kept history, and left "
-        "STOP_PENDING unconfirmed. A snapshot taken before revoke and spend was restored, and the sidecar "
-        "put the revocation and the spent budget back. Physical power was not cut.",
+        "pass",
+        "A committed hold survived reopening the file, a snapshot restore, and a killed process. "
+        "The uncertain outside effect was not repeated, history remained, and STOP_PENDING stayed "
+        "unconfirmed. The operating system killed the process after the hold was saved. The machine stayed powered on.",
     )
+
+
+def _kill_committed_hold(tmp: Path) -> None:
+    import os
+    import signal
+    import subprocess
+    import time
+
+    crash_dir = tmp / "crash"
+    crash_dir.mkdir()
+    node, _keys = _boot(crash_dir)
+    _offer(node, "crash-offer")
+    obligation_id = _accept(node, "crash-offer", work_id="crash-work")
+    database = node.postbox.path
+    node.close()
+    ready = crash_dir / "ready"
+    process = subprocess.Popen(
+        [sys.executable, "-m", "osamp.crash_probe", database, str(ready), obligation_id],
+        cwd=str(Path(__file__).resolve().parents[1]),
+    )
+    for _ in range(100):
+        if ready.exists():
+            break
+        time.sleep(0.05)
+    else:
+        process.kill()
+        process.wait(timeout=5)
+        raise AssertionError("child did not commit the hold")
+    os.kill(process.pid, signal.SIGKILL)
+    process.wait(timeout=5)
+    reopened = Node.open(database)
+    obligation = reopened.postbox.get_obligation(obligation_id)
+    assert obligation["execution_state"] == "held"
+    assert obligation["hold"]["reason"] == "timeout"
+    try:
+        reopened.play(obligation_id)
+        raise AssertionError("work resumed after the process was killed")
+    except OsampError:
+        pass
+    reopened.close()
 
 
 def check_cz29(tmp: Path) -> tuple[str, str]:

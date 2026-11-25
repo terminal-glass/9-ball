@@ -10,7 +10,7 @@ This repository now contains a **local safety slice**. It can record a small acc
 
 Read [OSAMP-Architecture.md](OSAMP-Architecture.md). It explains the parts, the three status boards, and how a safe hold works.
 
-Then read [REVIEW-1.md](REVIEW-1.md). It says what the first submission contains, what the tests showed, and what still needs a human decision.
+Then read [REVIEW-1.md](REVIEW-1.md) and [REVIEW-2.md](REVIEW-2.md). They say what each submission contains, what the tests showed, and what still needs a human decision.
 
 ## Folders and files
 
@@ -20,7 +20,8 @@ Then read [REVIEW-1.md](REVIEW-1.md). It says what the first submission contains
 | `tests/` | The checks reviewers can run. |
 | `more/` | Older notes. The previous whitepaper PDF lives here. |
 | `OSAMP-Architecture.md` | Plain-language architecture for this slice. |
-| `REVIEW-1.md` | Review note for submission 1. |
+| `REVIEW-1.md` | Review note for submission 1, the foundation. |
+| `REVIEW-2.md` | Review note for submission 2, the five agreements. |
 | `OSAMP_Technical_Whitepaper_v0.82.txt` | Current technical draft, 24 November 2026. |
 | `OSAMP_Contract_Outline_v0.1_2026-11-24.txt` | Current contract and implementation outline. |
 | `OSAMP_Engineering_Introduction.pdf` | Older one-page brief from 17 November 2026. |

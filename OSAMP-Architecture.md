@@ -4,6 +4,10 @@ A plain-language guide for the first local slice. 24 November 2026.
 
 This paper is for people who need to understand the software without an information-technology background. The technical drafts are `OSAMP_Technical_Whitepaper_v0.82.txt` and `OSAMP_Contract_Outline_v0.1_2026-11-24.txt`.
 
+## Where this sits
+
+In the installer line this work is stage 49, the 9-Ball controller. This repository keeps the release-folder shape: `49.sh` calls `49-1.sh`, then any later `49-2.sh` and so on. macOS and Windows have matching entry files. Nothing here calls stage 9, and this copy has not been placed into the separate installer repository.
+
 ## What this is
 
 OSAMP is the Open Source Agent Mail Protocol. It is the rule book behind 9-Ball: how separately owned helpers may contact each other, accept a limited job, stop, and keep a record a person can read.

@@ -24,8 +24,12 @@ Then read [REVIEW-1.md](REVIEW-1.md). It says what the first submission contains
 | `OSAMP_Technical_Whitepaper_v0.82.txt` | Current technical draft, 24 November 2026. |
 | `OSAMP_Contract_Outline_v0.1_2026-11-24.txt` | Current contract and implementation outline. |
 | `OSAMP_Engineering_Introduction.pdf` | Older one-page brief from 17 November 2026. |
-| `OSAMP-Linux`, `OSAMP-Mac`, `OSAMP-Windows` | Run the local checks. They do not install network mail. |
-| `OpenClaw-Installer-Windows`, `OpenClaw-Installer-Mac`, `OpenClaw-Installer-Linux` | Kept under these names. This slice does not fill or run them. |
+| `49.sh` | Linux controller. Runs `49-1.sh`, then later sub-stages, in order. |
+| `49-1.sh` | Stage 49-1: Contract Zero and the foundation. |
+| `49-mac.sh`, `49-1-mac.sh` | The same groups for macOS. |
+| `49-windows.ps1`, `49-1-windows.ps1` | The same groups for Windows. |
+| `OSAMP-Linux`, `OSAMP-Mac`, `OSAMP-Windows` | Point at the stage 49 controller for that platform. |
+| `OpenClaw-Installer-Linux`, `OpenClaw-Installer-Mac`, `OpenClaw-Installer-Windows` | Point at the same controllers. They do not install OpenClaw and they do not call stage 9. |
 
 There is no `docs/` folder. Papers stay at the top so they are easy to find.
 
@@ -39,7 +43,15 @@ python3 -m osamp.conformance
 python3 -m osamp demo
 ```
 
-On Mac or Linux you can also run `./OSAMP-Mac` or `./OSAMP-Linux`. On Windows, run `OSAMP-Windows` from a command prompt in this folder, or run the `python` command above. The Windows file is a command script without a `.bat` suffix because the name had to stay `OSAMP-Windows`.
+Stage 49 is the local controller. Its default is a dry run: it prints the groups and does not install packages or open a network connection.
+
+```text
+bash 49.sh --dry-run
+bash 49.sh --status
+bash 49-1.sh --verify
+```
+
+On Mac, `bash 49-mac.sh --dry-run` or `./OSAMP-Mac`. On Windows, run `OSAMP-Windows` or `OpenClaw-Installer-Windows` from a command prompt. Those names stay fixed. They hand off to `49-windows.ps1`.
 
 ## Current drafts and older paper
 

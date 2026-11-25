@@ -1,4 +1,21 @@
-# Review 1 — Contract Zero and the foundation
+# Review 1 — stage 49-1, Contract Zero and the foundation
+
+This is installer stage **49-1**. The controller is `49.sh`. It calls `49-1.sh` and any later `49-N.sh` in order. Stage 9 is not called.
+
+| Platform | Controller | This group |
+| --- | --- | --- |
+| Linux | `49.sh` | `49-1.sh` |
+| macOS | `49-mac.sh` | `49-1-mac.sh` |
+| Windows | `49-windows.ps1` | `49-1-windows.ps1` |
+
+`OpenClaw-Installer-Linux`, `OpenClaw-Installer-Mac`, and `OpenClaw-Installer-Windows` only point at those controllers. They do not install OpenClaw. `OSAMP-Linux`, `OSAMP-Mac`, and `OSAMP-Windows` point at the same controllers. Mac and Windows run the same Python checks as Linux. That is one implementation with three entry points, not a second adapter.
+
+```text
+bash 49-1.sh --dry-run
+bash 49-1.sh --status
+bash 49-1.sh --verify
+bash 49.sh --dry-run
+```
 
 Please review this submission on its own. It is the first of a stack. It does not need the later submissions to be understandable.
 

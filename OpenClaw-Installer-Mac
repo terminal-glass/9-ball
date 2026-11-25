@@ -1,0 +1,6 @@
+#!/bin/sh
+# Pointer for the Mac OpenClaw entry name.
+# This does not install OpenClaw. It opens the macOS stage 49 controller.
+# It does not call stage 9.
+cd "$(dirname "$0")"
+exec bash ./49-mac.sh "$@"

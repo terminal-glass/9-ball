@@ -16,7 +16,7 @@ EXPECTED = {
     "WP-09": "pass",
     "WP-10": "pass",
     "WP-11": "pass",
-    "WP-12": "pending",
+    "WP-12": "partial",
     "WP-13": "pass",
     "WP-14": "pass",
     "WP-15": "pass",

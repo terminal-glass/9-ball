@@ -499,13 +499,19 @@ def check_wp10(tmp: Path) -> tuple[str, str]:
     expired = node.postbox.get_envelope("offer-1")
     assert expired["body"] is None and expired["delivery_state"] == "expired"
     blob = Path(node.postbox.path).read_bytes()
+    backup = Path(node.postbox.backup_path).read_bytes()
     assert phrase.encode() not in blob
+    assert phrase.encode() not in backup
     assert b"accepted-objective-must-remain" in blob
+    assert b"accepted-objective-must-remain" in backup
     assert node.postbox.get_obligation(kept)["authority_state"] == "accepted"
+    policy = node.postbox.backup_policy()
+    assert policy["offsite_backups"] == "none"
     return (
-        "partial",
-        "Expired invitation text was removed from this SQLite file, including the audit trail, "
-        "while the accepted objective remained. No backup copy, log shipper, or second store exists to check.",
+        "pass",
+        "Expired invitation text was removed from the main database and from the local backup file. "
+        "The accepted objective remained in both. The declared policy says there is no off-site backup, "
+        "so no off-site copy was deleted.",
     )
 
 
@@ -1052,14 +1058,18 @@ def check_cz29(tmp: Path) -> tuple[str, str]:
     assert closed["execution_state"] == "closed"
     assert closed["objective"] is None
     blob = Path(node.postbox.path).read_bytes()
+    backup = Path(node.postbox.backup_path).read_bytes()
     assert phrase.encode() not in blob
+    assert phrase.encode() not in backup
+    assert b"retention_closure" in backup
     exported = node.export_minimal(obligation_id)
     assert exported["objective_present"] is False
     assert exported["disposition"] == "retention_closure"
+    assert node.postbox.backup_policy()["offsite_backups"] == "none"
     return (
-        "partial",
-        "A pre-agreed closure sent a notice, then removed the objective from this SQLite file and kept "
-        "a disposition. There is no backup system, so copies outside this file are not deleted.",
+        "pass",
+        "A pre-agreed closure sent a notice, removed the objective from the main database and the local "
+        "backup, and kept the disposition in both. No off-site backup is declared, so none was deleted.",
     )
 
 

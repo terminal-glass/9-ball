@@ -6,7 +6,7 @@ This paper is for people who need to understand the software without an informat
 
 ## Where this sits
 
-In the installer line this work is stage 49, the 9-Ball controller. This repository keeps the release-folder shape: `49.sh` calls `49-1.sh`, then `49-2.sh`, then `49-3.sh`. macOS and Windows have matching entry files. Nothing here calls stage 9, and this copy has not been placed into the separate installer repository.
+In the installer line this work is stage 49, the 9-Ball controller. This repository keeps the release-folder shape: `49.sh` calls `49-1.sh` through `49-4.sh` in order. macOS and Windows have matching entry files. Nothing here calls stage 9, and this copy has not been placed into the separate installer repository.
 
 ## What this is
 
@@ -112,13 +112,13 @@ Statuses below are from `python3 -m osamp.conformance` and `python3 -m unittest 
 | B-GATE02, WP-01, WP-02 | Unknown senders are not forwarded. An unanswered invitation does not use a model. | `osamp/gate.py` | WP-01, WP-02 | Pass, allowlist rather than signatures |
 | P-MSG04, WP-07 | The same message id does not accept twice. A changed body under that id is refused. | `osamp/gate.py`, `osamp/postbox.py` | WP-07, foundation concurrency test | Pass |
 | B-QUEUE01, WP-08 | Reopening the file still enforces holds and revocation. | `osamp/postbox.py` | WP-08 | Pass for reopening this file |
-| B-QUEUE04, WP-10 | Expired invitation text is removed from this file. Accepted text stays. | `osamp/node.py` compact | WP-10 | Partial: no backup store |
+| B-QUEUE04, WP-10 | Expired invitation text is removed from the main file and the local backup. Accepted text stays. | `osamp/postbox.py` | WP-10 | Pass for the declared local copies. No off-site backup exists. |
 | B-CTRL01, WP-18, WP-20 | Rewind keeps history and outside effects. Fast-forward cannot skip a yes or a hold. | `osamp/covenant.py` | WP-18, WP-20 | Pass |
 | B-AUTH01, WP-21 | Switching off the covenant withdraws any conformance claim. | `osamp/node.py` | WP-21 | Pass |
 | B-CAP01, WP-04 | A bounded step can be named. A whole project is refused. | `osamp/contract_zero.py` | WP-04 | Partial: no measured benchmark |
 | B-COR02, WP-16 | Holds and a human-satisfied receipt stay on file. | `osamp/node.py`, `osamp/agreements.py` | WP-16 | Pass |
 | CZ-28 | Restart keeps uncertain outside effects and does not repeat them. | `osamp/node.py` | CZ-28 | Partial: no power cut, no backup restore |
-| P-Z09, CZ-29 | Retention notice and agreed closure remove only the eligible objective from this file. | `osamp/node.py` | CZ-29 | Partial: no off-site copies |
+| P-Z09, CZ-29 | Retention notice and agreed closure remove the objective from the main file and the local backup, and keep the disposition. | `osamp/node.py` | CZ-29 | Pass for the declared local copies. No off-site backup exists. |
 | B-TRIBE01, WP-05 | Tribe help has its own budget. Membership is not a job. | `osamp/agreements.py` | WP-05 | Pass, local queue only |
 | B-CLAN01, WP-06 | A bridge needs a human approval. An endorsement does not open a route. | `osamp/agreements.py` | WP-06 | Pass, nothing transmitted |
 | B-DATA02, WP-11 | Catch-up shows only the authorized minimum. | `osamp/node.py` `catch_up` | WP-11 | Pass, local fields only |

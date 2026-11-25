@@ -32,6 +32,7 @@ from osamp.plain import OPERATOR_PROMISE, PERMITTED_HUMAN_STEPS, hold_sentence
 from osamp.postbox import Postbox
 from osamp.profile import Profile, default_profile
 from osamp.records import HUMAN_HOLD_REASONS
+from osamp.schedules import allow_route, screen_notice
 
 ACK_SCOPE = "osamp-work"
 
@@ -1098,6 +1099,7 @@ class Node:
             }
             if not obligation["contact_reachable"]:
                 body["note"] = "No contact is reachable. The work stays waiting."
+            screen_notice(body)
             notification_id = self._new_id("note")
             self.postbox.insert_notification(
                 {
@@ -1359,6 +1361,7 @@ class Node:
         if self.postbox._in_tx:
             raise OsampError("transaction", "Cannot compact while a save is in progress.")
         self.postbox.conn.execute("VACUUM")
+        self.postbox.vacuum_backup()
 
     def export_minimal(self, obligation_id: str) -> dict:
         obligation = self._load(obligation_id)
@@ -1470,11 +1473,7 @@ class Node:
         if any(field in {"transcript", "chain_of_thought"} for field in requested):
             raise OsampError("catchup_refused", "Catch-up does not include a transcript or private reasoning.")
         data_class = obligation["limits"].get("data_class", "public-example")
-        if data_class == "private-medical" and route in {"public-news", "press"}:
-            raise OsampError(
-                "catchup_refused",
-                "A private medical note stays off public and press routes.",
-            )
+        allow_route(data_class, route)
         return {
             "summary": None if obligation["objective_deleted"] else obligation.get("objective"),
             "evidence": list(obligation["capsule"].get("evidence_digests") or []),

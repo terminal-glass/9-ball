@@ -1,0 +1,397 @@
+OSAMP Contract Outline
+
+Human oversight, peer participation, and software implementation expectations
+Draft v0.1 | 24 November 2026 | Prepared for Jonathan Jolly and Cursor review
+
+1. Purpose and drafting status
+
+Turn the OSAMP white paper into a reviewable contract structure that humans can understand and software can enforce. Each obligation must identify who may authorize it, what the system must record, how it behaves during failure, and what evidence demonstrates compliance.
+
+This is an outline for the protocol compact and its implementation specification. It is not an executed agreement or evidence that any proposed feature is deployed. Any commissioned developer engagement needs its own agreed scope, compensation, intellectual-property terms, confidentiality, and acceptance schedule.
+
+1.1 Sources and precedence
+
+|Reference|Source                                                                                                                                                                                               |Use                                                                                                                                                                                                            |
+|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|WP       |[OSAMP Technical Whitepaper v0.81, 17 November 2026](https://chatgpt.com/library?file_id=libfile_1739e30fa79c819182b433dd6eeea725&account_id=e050e395-3fc9-4540-9182-3bab75e75c80)                   |Primary architecture baseline; document revision v0.81, illustrative wire version `osamp/0.8-draft`.                                                                                                           |
+|CH       |[8-Ball / 9-Ball / OSAMP Cursor coordination handoff, 12 November 2026](https://chatgpt.com/library?file_id=libfile_e7f7b548818c8191accac0d5eb48326c&account_id=e050e395-3fc9-4540-9182-3bab75e75c80)|Supporting implementation boundaries and historical review findings; current code must be audited.                                                                                                             |
+|H0       |Jonathan’s direction, 24 November 2026                                                                                                                                                               |Add a human-facing Contract Zero proposal; stop confused or circular AI activity, seek human assistance, and prevent accepted obligations from disappearing through routine expiry, especially on small agents.|
+|P        |Proposed elaboration in this outline                                                                                                                                                                 |Candidate requirements, records, tests, and implementation sequence for review. These do not silently amend WP.                                                                                                |
+
+WP remains the baseline except where an explicitly accepted amendment changes it. CH supplies supporting context rather than a claim about current repository status. H0 is incorporated here as a concrete proposal for review. New requirements use P- IDs; baseline requirements use B- IDs. All IDs identify draft obligations, not a claim of tested conformance.
+
+MUST means required by the adopted specification; SHOULD permits an explained exception; MAY is optional within authority. During drafting, adoption remains pending. Unknown security-sensitive values block the affected action; they are not permission to invent defaults.
+
+1.2 Contract architecture
+
+|Layer                |Intended document                               |Status and boundary                                                                                                                         |
+|---------------------|------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+|0                    |**Contract Zero: Human Oversight and Safe Hold**|Proposed human-facing acknowledgment and mandatory procedural schedule explaining the existing Covenant and the additional safeguards below.|
+|1                    |Peer Contract                                   |Existing bilateral identity/contact agreement.                                                                                              |
+|2                    |Tribe Contract                                  |Existing bounded small-circle agreement; retain this baseline name until terminology changes are approved.                                  |
+|3                    |Clan Contract                                   |Existing broader federation/escalation agreement.                                                                                           |
+|4                    |Table Contract                                  |Existing acceptance of named, limited collaboration roles.                                                                                  |
+|5                    |Work Contract                                   |Existing Project or Corridor authority.                                                                                                     |
+|Separate namespace   |Numbered services/categories, including 6–9     |Routing/service profiles, not automatically additional relationship agreements.                                                             |
+|Executable foundation|Self-Governance Covenant                        |Local enforcement of safety and authority at every transition and tool boundary.                                                            |
+
+Proposed structural choice: present Contract Zero to humans before enabling OSAMP work. Attach its acknowledgment to operator records; implement its safeguards through the Covenant. Keep the five existing negotiated categories intact. If Contract Zero is instead intended to become a separately negotiated sixth category, amend WP, schemas, compatibility rules, and tests explicitly before implementation.
+
+2. Contract Zero: Human Oversight and Safe Hold
+
+Basis: WP §§3, 6, 8–8.4; H0. The human-facing schedule and detailed recovery procedure below are proposed extensions.
+
+2.1 Plain-language promise to the operator
+
+> You remain responsible for the authority you give this system. An agent may decline new work or stop accepted work when it lacks evidence, capacity, permission, or a safe next step. If it becomes stuck, repeats unsupported conclusions, or circulates work without progress, it must pause the affected activity and ask for authorized human help. It must preserve the minimum recovery record for accepted work. Silence, a timeout, a stronger model, and agreement among agents do not authorize it to continue.
+
+P-Z01 — Human acknowledgment. Before OSAMP execution is enabled, show the safeguards, limits of stopping and reversal, data retention policy, and named escalation contacts. Record the operator identity, authenticated approval action, acknowledgment version/digest, scope, and time. An operator may decline activation and keep using permitted local functionality. Installation, license activation, and opening a tile do not constitute acknowledgment.
+
+P-Z02 — Acknowledgment does not create work authority. Contract Zero acknowledgment does not enroll peers, permit data disclosure, accept a task, or replace any applicable relationship, Table, or Work approval. Incoming agents cannot negotiate away its mandatory safeguards.
+
+2.2 Observable triggers for protective review
+
+Use explicit evidence and bounded counters, rather than a model’s assertion that it has detected a “hive mind.” In this contract, that concern means circular or correlated agent behavior that lacks independent verification; it is not a claim that agents share consciousness.
+
+|Trigger                                                                                               |Required response                                                      |Evidence to retain                                                |
+|------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|------------------------------------------------------------------|
+|Repeated agreement based on the same source/output, presented as independent verification             |Enter REVIEW; block disputed completion and downstream actions.        |Source lineage and the specific unsupported claim.                |
+|Circular help requests, repeated handbacks, or a Corridor returning to an earlier stage               |Reject the loop and hold the affected work.                            |Relevant stage/event IDs and remaining budgets.                   |
+|Conflicting evidence, ambiguous instructions, or uncertainty beyond the accepted role                 |Ask the designated human or an already-authorized independent reviewer.|Conflicting references and one precise unresolved question.       |
+|Repeated failed attempts without new evidence or measurable progress                                  |Stop at the configured attempt/time/budget limit.                      |Attempt count, last meaningful progress, and failure reason.      |
+|Missing context/checkpoint, unreliable local state, or inability to reconstruct authority             |Block execution; request recovery review.                              |Known facts, missing records, and possibly completed side effects.|
+|Resource exhaustion, stale capability evidence, or insufficient space to preserve accepted commitments|Stop accepting affected work; safely hold existing work.               |Resource condition and affected commitment IDs.                   |
+|Suspicious peer/key behavior or a compromised local supervisor                                        |Freeze the affected authority scope and escalate an incident.          |Minimum security evidence without exposing secrets.               |
+
+P-Z03 — Bounded detection. Adopt explicit configurable limits for repeated attempts, delegation cycles, no-progress duration, evidence requirements, and review escalation. Decide their values before enabling the affected workflow. Exact content hashes alone cannot detect semantic repetition; provenance and bounded execution limits remain necessary. A human or agent may request an earlier hold.
+
+2.3 What “power off” means
+
+P-Z04 — Stop active work. On a qualifying trigger, the local supervisor prevents new inference, tool calls, delegated offers, and side-effecting actions for the affected scope. Checkpoint or terminate running operations where supported. Record in-flight actions that cannot be safely interrupted as uncertain until reconciled. A stopped model must not keep reasoning in the background to decide whether it should stop.
+
+P-Z05 — Preserve a minimal recovery path. The deterministic supervisor/Postbox may remain available to preserve commitments, receive authenticated stop/revocation/human decisions, and issue bounded notifications. It does not need an LLM to hold state. The owner retains a manual emergency shutdown option. After a full machine shutdown, recovery checks must run before any work resumes.
+
+P-Z06 — Scope and containment. Default to holding the affected task/Table; widen to a peer or node when evidence indicates a broader compromise or unreliable shared supervisor. Do not stop unrelated safe work solely because one task is uncertain. Document which authority can widen the hold and what remains available.
+
+2.4 Preserve commitments; expire unnecessary conversation
+
+B-RET01 — Invitation expiry and accepted obligation retention are different clocks. Unaccepted invitations and noise may expire under policy. Acceptance creates a durable commitment that survives queue cleanup, context-window eviction, process failure, and disconnection under the agreed retention conditions. A work deadline may cause a hold or explicit expiry/closure transition; it must not silently erase an obligation.
+
+P-Z07 — Recovery capsule. Before acknowledging acceptance, reserve and durably persist enough state to recover the obligation. At hold, retain or reference:
+
+• Work, Table, role, event, and contract-version identifiers.
+• The accepted objective, limits, deadlines, and responsible human.
+• Completed actions, evidence/artifact digests, and known external effects.
+• The current blocker, uncertainty, and last verified checkpoint.
+• Remaining resources, lease status, stop/revocation state, and pending deliveries.
+• The exact decision requested from the human and permitted next steps.
+• Applicable archive/delete conditions and access controls.
+
+The capsule must be useful without retaining a full transcript or requiring a new model-generated summary. Deterministic records are the fallback if the model is unavailable. Store permitted references rather than duplicating sensitive payloads.
+
+P-Z08 — Lower-capacity agents. A size-1 deterministic worker or a small model must be able to persist, hold, and request help without inference. Limit accepted concurrency/context to available storage and resources. If the agent cannot retain the required capsule, it must decline before acceptance or safely hold/handoff an existing commitment. Small size never authorizes weaker consent or silent forgetting.
+
+P-Z09 — No indefinite retention by accident. Set contract-defined retention, review, archive, and deletion conditions, including what happens if a human never responds. A retention deadline approaching while work is unresolved triggers escalation or an authorized closure/export decision. Preserve the permitted minimal closure/hold record; do not retain all private content forever. Define recipient and backup limits honestly.
+
+2.5 Human notification, response, and resumption
+
+P-Z10 — Help request. Send a bounded notification through an already-authorized route: what stopped, what is uncertain, any known external effect, and the exact requested decision. Record queued/sent/delivered/acknowledged separately. Rate-limit reminders; a missing acknowledgment does not restart work. If no contact is reachable, remain dormant and preserve the obligation. Emergency assistance requires an alternative human path rather than reliance on an unattended queue.
+
+P-Z11 — Authorized choices. Offer review evidence, clarify/narrow scope, approve a specific corrective step, accept a handoff, terminate/close under the contract, or leave held. A natural-language reply alone is not sufficient authentication for a material approval.
+
+P-Z12 — Resume conditions. For Contract Zero confusion/loop holds, require an authenticated decision from the designated human. Revalidate contract digests, permissions, revoked keys, current capacity, remaining budget, lease, checkpoint integrity, and unresolved effects. Do not reset attempt counters or budgets merely because a human replied; an increase requires a scoped amendment. Human approval cannot disable mandatory integrity controls.
+
+P-Z13 — Review outcome. Record who decided, the evidence considered, the exact action permitted, and what uncertainty remains. Resume, narrow/handoff, or close explicitly. Preserve history; do not rewrite the failure as successful completion.
+
+2.6 Contract Zero acceptance evidence
+
+1. With the model process killed, a previously accepted task remains visible with a useful recovery capsule and can enter human review.
+2. Three agents repeating one unsupported source cannot satisfy an independent-review requirement.
+3. Repeated attempts or circular delegation hit their configured limits without a new model call being needed to stop.
+4. A lower-capacity agent under memory/storage pressure holds safely without deleting an accepted commitment.
+5. Human silence, restarts, and reconnection leave the affected work dormant.
+6. Authenticated human clarification permits only the reviewed action after all other gates pass.
+7. Actual machine shutdown/restart does not bypass pending holds or replay an uncertain external effect.
+8. Retention expiry follows explicit review/closure rules and removes only the content eligible for deletion.
+
+3. Parties, identities, and accountable roles
+
+Basis: WP §§1–2, 7, 9.6, 9.13.
+
+B-ID01. Identify each human owner/operator, independently controlled node, agent/runtime, public key, and authorized endpoint. Names, emoji, license colors, and mail addresses are display attributes, not authentication.
+
+B-ID02. Name who can approve relationships, accept delegated work, authorize disclosures/bridges, review contested results, revoke peers, approve resumption, and confirm completion. Agent acceptance must remain within authenticated human delegation.
+
+B-ID03. Treat endorsements as evidence for an owner’s decision. They do not activate a contract or confer access. Trust is non-transitive. W3C credentials and organizational federation remain optional future mechanisms.
+
+P-ID04. Provide explicit deputy/unavailable-owner rules, contact changes, key rotation/loss recovery, separation of approver and contested worker where required, and revocation propagation. Do not infer a deputy from social familiarity or group membership.
+
+4. Common schedule required by every agreement
+
+Basis: WP §§2–8, 10; detailed fields below are proposed schema elaboration.
+
+|Schedule              |Required contents                                                                                                                             |
+|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+|Identity/version      |Contract ID, agreement type, schema version, revision, digest, parties, status, effective/expiry times, and signed or authenticated approvals.|
+|Scope                 |Purpose, allowed messages/actions, named resources, data classes, recipients, jurisdiction/placement restrictions, and explicit exclusions.   |
+|Delegation            |Who may offer/accept work, permitted autonomy, approval points, tool allowlist, and restrictions on external effects.                         |
+|Capacity and economics|Task-fit evidence, quotas, concurrency, time/compute/token/money limits, who bears costs, and any agreed compensation.                        |
+|Time                  |Offer TTL, acceptance/work deadlines, help/review deadlines, execution-lease duration, and archive/delete conditions.                         |
+|Control               |Pause/stop/review rights, human contacts, Contract Zero triggers, checkpoint/handoff procedure, and resume authority.                         |
+|Evidence              |Required receipts/artifacts, provenance, completion tests, independent review, access, and dispute/uncertainty handling.                      |
+|Lifecycle             |Amendment, withdrawal, revocation, responsibility for accepted work, export, closure, retention, and deletion evidence.                       |
+
+B-AUTH01. Applicable permissions intersect. The most restrictive applicable rule wins. Work, peer votes, model instructions, stronger hardware, and commercial entitlement cannot enlarge owner authority or override mandatory holds.
+
+P-AUTH02. Enumerate which contract references are required for each event. Bilateral work need not invent irrelevant Tribe/Clan relationships, while cross-boundary work must supply every agreement/approval its route actually requires. Resolve missing or conflicting authority before execution.
+
+5. Relationship schedules: Peer, Tribe, Clan, and Table
+
+5.1 Peer Contract — direct contact
+
+B-PEER01. Bind verified endpoint/key identities to owners, permitted contact/message types, data scope, term, quotas, and revocation. Receipt does not grant execution, disclosure, or project membership.
+
+Evidence: an approved peer can submit only permitted traffic; unknown, revoked, or wrong-scope peers trigger no unauthorized relay, inference, or tools.
+
+5.2 Tribe Contract — bounded working circle
+
+B-TRIBE01. Define explicit membership, invitation/attention budgets, visibility, help scope, costs, and withdrawal. Membership alone creates no accepted job or access to unrelated Tables.
+
+Evidence: offers remain within approved membership and quotas; refusal/expiry does not cause repeated recruitment or an inference loop.
+
+5.3 Clan Contract — bounded federation
+
+B-CLAN01. Name eligible destinations, escalation conditions, hops, offers, cost limits, and human-controlled boundaries. A new peer cannot inherit access through an existing member.
+
+Evidence: an attempted unapproved destination or boundary crossing fails closed; a scoped Bridge Acceptance permits only its stated disclosure and duration.
+
+5.4 Table Contract — accepted roles
+
+B-TABLE01. Record project/task/Table IDs, named participants, exact roles, tools/data, resource limits, due/hold conditions, and acceptance receipts. A routing-only peer is not a participant. A changed role requires the applicable renewed acceptance.
+
+B-TABLE02. Keep responsibility until completion, accepted handoff, or an explicit safe hold/closure under contract. A proposed handoff does not discharge the original participant. Departure cannot silently orphan accepted work.
+
+Evidence: invitation/delivery never seats a participant; each accepted role survives restart, remains isolated from other Tables, and closes with a verifiable disposition.
+
+6. Work schedule: Project or Corridor
+
+6.1 Project Contract — agreed outcome
+
+B-WORK01. Define objective, deliverables, exclusions, dependencies, accepted roles/Tables, allowed artifacts/tools, budgets, deadlines, and who may accept results. State objective completion checks and any required human approval. Distinguish producing a result from its acceptance.
+
+Evidence: a plausible answer without required tests/provenance/approval cannot become COMPLETE. Work outside scope requires an amendment and renewed acceptance where applicable.
+
+6.2 Corridor Contract — finite route
+
+B-COR01. Define one case, ordered stages, permitted recipient(s) or capability classes, disclosure per stage, task-fit requirements, entry/exit conditions, escalation decision, and shared/stage budgets. Specify whether it belongs to a Project.
+
+B-COR02. Advance only through approved stages. Stage order is monotonic within a contract version; retries, restart, or new offers cannot reset limits or create a new route. Stop early on verified SOLVED or a named human’s HUMAN_SATISFIED acknowledgment. Unavailable authority/capacity yields HELD; expiry/closure follows explicit rules.
+
+Evidence: an early solution prevents further escalation; a decline or unresolved stage cannot broaden the recipient set, loop, renew budget, or auto-create another Table.
+
+7. Capability, resources, and consent
+
+Basis: WP §§2, 5–6; CH.
+
+B-CAP01. Keep the measured 1–9 capability profile separate from authority, product entitlement, humanitarian eligibility, and operator approval. Record task class, benchmark/evidence date, tools/models, resource limits, availability, and freshness. Unknown fit is unknown.
+
+B-CAP02. A small worker may accept a narrow useful task, ask approved help, hold, or decline. A high-capacity worker receives no broader authority. A Crown is a scoped coordination role.
+
+P-CAP03. Reserve resources for accepted concurrency, ledger/capsule storage, and remaining budgets before acceptance. Specify budget allocation across delegates and retries; do not let each child spend the parent’s full budget independently. Decide safe behavior for stale measurements and provider cost uncertainty.
+
+B-CAP04. Preserve the supporting handoff’s product separation: non-agentic consultation does not enable unattended agent work by assumption. Clarify the distinction between a humanitarian product called 9-Ball and the protocol’s measured 9-Ball Profile in user-facing terminology.
+
+8. Deterministic authorization gate and execution boundary
+
+Basis: WP §§4–5, 8–10.
+
+B-GATE01. Before inference or tools, check authenticated sender and envelope integrity, supported schema/event, current applicable agreements and digests, recipient/scope/data class, replay, expiry, owner delegation, required acceptance, holds/revocations, lease, and remaining limits. Recheck relevant authority at each execution/forwarding transition.
+
+B-GATE02. Reject or quarantine unauthorized traffic under bounded storage policy. Invalid, expired, duplicate, irrelevant, or unaccepted work traffic must not trigger agent inference/tool execution. Content is untrusted data even from a verified peer.
+
+P-GATE03. Distinguish two paths: admitting a permitted invitation for human review, and authorizing actual work after acceptance. Define authorized bootstrap/pairing separately so “no contract, no relay” does not create either a pairing deadlock or an unrestricted invitation channel.
+
+P-GATE04. Persist replay/commitment state before dispatch. Use local transaction and concurrency controls so two workers cannot both accept or execute the same event. Do not claim exactly-once external effects: if an external call may have succeeded before a crash, enter uncertain/held reconciliation rather than repeat blindly. Use provider idempotency keys where supported.
+
+Evidence: count model and tool invocations from the adapter boundary; logs saying “rejected” are insufficient. Crash tests cover persistence-before-execution and ambiguous side-effect outcomes.
+
+9. Message, receipt, and transport schedule
+
+Basis: WP §§9–10; P for schema completion.
+
+B-MSG01. Adopt a versioned envelope containing protocol/governance versions and digests, scoped event ID/type, sender/recipient key IDs, applicable contract references, work kind, Table/role/stage references where applicable, times/limits, data class, payload digest, and signature. Unknown event types fail closed.
+
+P-MSG02. Specify field presence by event, canonical serialization, signature coverage/suite, digest algorithm, timestamp/skew behavior, key discovery/rotation, payload and attachment limits, and signed test vectors before claiming interoperability. Peer invitation events cannot require a pre-existing accepted Work role.
+
+B-MSG03. Keep separate receipts for delivery, relationship/role/work acceptance, execution control/hold acknowledgment, result submission, completion acceptance, and human satisfaction. Bind each to its event and current scope/version. An email subject/header, transport receipt, readable body, or A2A role value is not authority.
+
+P-MSG04. Define event ordering, duplicate response behavior, replay-retention window, acknowledgment loss, conflicting/stale events, and collision handling. A reused ID with a different signed payload is an integrity failure, not an ordinary retry. A delayed result cannot automatically resurrect revoked work.
+
+B-MSG05. Transport adapters may carry the same signed semantics through email, HTTPS, A2A, or other agreed carriers. Transport authentication does not replace OSAMP authorization. Verify current adapter versions/cancellation behavior before relying on them.
+
+10. Separate state machines and controls
+
+Basis: WP §§4, 6, 8, 9.5, 9.11; P for formalization.
+
+|Dimension     |Draft states to formalize                                                                         |Required separation                                                                              |
+|--------------|--------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+|Delivery      |Draft, queued, sending, delivered, failed, expired                                                |Delivery never implies work acceptance.                                                          |
+|Agreement/role|Proposed, offered, accepted, revoked, expired, closed                                             |Relationship or role authority is distinct from process health.                                  |
+|Execution     |Ready, working, paused/held, review, stop-pending, stopped, result-submitted, completed, uncertain|Accepted work can be held while the peer is offline; result submission need not equal completion.|
+
+State names above are a drafting inventory, not a ratified wire enumeration. Define allowed transitions, initiator authority, durable writes, receipts, and recovery behavior for every event.
+
+B-CTRL01. Enforce PLAY/RESUME, PAUSE, STOP, REWIND, REVIEW, FAST-FORWARD, and TIMEOUT locally. Resume validates current authority and holds. FAST-FORWARD cannot skip checks. REWIND restores only verified supported state and records compensation for irreversible effects; it cannot erase history.
+
+B-CTRL02. Remote stop remains STOP_PENDING until the peer’s local supervisor confirms the scoped hold/stop. Expiring execution leases limit activity during disconnection; they do not prove that a remote process has stopped. Check pending holds/revocations before resumed tools.
+
+P-CTRL03. Define lease renewal, trusted time/skew bounds, safe points, non-interruptible operations, conflicting controls, and pause-versus-stop closure. An unresolved hold dominates a delayed PLAY/result. Contract Zero human-review holds require their explicit resolution, not a timer-based retry.
+
+11. Durable Postbox, retention, and recovery
+
+Basis: WP §§6, 8.3, 9–9.2, 9.9; Contract Zero proposed extensions.
+
+B-QUEUE01. Persist inbox/outbox, accepted obligations, budgets, receipts, holds, and deduplication state. Bound retries, storage, and offer TTL. Reconnect revalidates current authority before forwarding or execution. Queue expiry does not delete an accepted commitment.
+
+B-QUEUE02. Keep the authoritative OSAMP ledger separate from a rolling notification inbox. Mailpit retention, mailbox deletion, log rotation, and UI cleanup cannot erase accepted work authority or required evidence.
+
+P-QUEUE03. Define quota exhaustion, interrupted writes, disk-full recovery, schema migration, backup/restore, replay after restore, corrupted state, and retention of revocation/closure tombstones. A restore cannot re-enable revoked work or reset budgets. Reserve space for safety/hold records.
+
+B-QUEUE04. Address active queues, attachments, indexes, logs, backups, and independent recipients in deletion policy. Report what deletion is verified and what remains outside local control. Confidential conversation is not community training data by default.
+
+12. Data, evidence, privacy, and security
+
+Basis: WP §§3, 7–8.4, 9.9.2, 9.10–9.14.
+
+B-DATA01. Define actual sensitivity, authorized recipients, minimal disclosure, storage/backup placement, export controls, and approved bridges per deployment. License colors and service numbers do not classify data sensitivity or establish transfer permission.
+
+B-DATA02. Provide catch-up only after verified role acceptance and disclosure permission. Include a bounded summary, evidence, uncertainty, subtask, and contract version; do not dump transcripts. Keep private medical conversations outside public news/press routes.
+
+B-EVID01. Distinguish observed facts, tool results, inferences, and open questions. Keep provenance/content hashes and require independent evidence for contested results. Agreement among agents sharing a source is correlated evidence.
+
+B-SEC01. Assume malicious/mistaken content, even from authenticated peers. Enforce sandboxes, tool allowlists, authenticated approvals, key protection, revocation/rotation, quotas, and account isolation. Model text cannot override contracts, leases, or holds.
+
+P-SEC02. Specify attachment handling, payload size/decompression limits, log redaction, permission separation, artifact access expiry, and the response to compromised keys. Human-facing review screens must avoid executing imported content or leaking secrets through notifications.
+
+13. Mail and agent interfaces
+
+Basis: WP §§9.3–9.11.
+
+B-UI01. Mail shows communication, invitations, queues, and receipts. Glass Agents shows workers, resources, tasks, and actual supervisor controls. Both link to the same stable records. Opening a dashboard does not connect accounts or accept work.
+
+B-UI02. Display delivery, authority, and execution independently. Keep identity colors distinct from operational badges; show readable status labels and reasons. Include visible STOP_PENDING, last contact/freshness, and the required human action.
+
+P-UI03. Add a plain-language Contract Zero acknowledgment and a “Needs human help” view showing the recovery capsule, uncertainty, known effects, and authorized decisions. A small-agent hold must be as visible as a large-agent hold. Reading available local mail remains possible during a sending hold where authorized.
+
+B-UI04. Preserve WP §9.9.3: human-readable prose first; exactly one standalone divider of 19 equals signs before technical references; subject format {contract_number} [rank] Clear human summary when values are verified. Service number and measured rank are separate, and neither authorizes routing. Show unknown values honestly. Thread history does not introduce additional dividers into a newly authored message.
+
+B-UI05. Reuse existing mail components through isolated, explicit account/configuration scopes. A Himalaya source clone or Mailpit inbox is not a working OSAMP app. Preserve existing OpenClaw accounts, executables, services, and secrets; verify actual backend interfaces.
+
+14. Numbered services, licensing, and deployment boundaries
+
+Basis: WP §§9.9–9.14, 12; P for namespace reconciliation.
+
+B-SVC01. Keep numbered message/service categories separate from Peer/Tribe/Clan/Table/Work types and proposed Contract Zero. WP assigns a Contract 8 display marker but does not fully define numbered routing profiles.
+
+P-SVC02. Draft separate service schedules for Essential News (6), Assistance Communications (7), Press/News (8), and Business/VM Coordination (9), using these as working labels from planning history pending source/owner confirmation. Each needs allowed data, recipients, human review, costs, expiry, and prohibitions. They confer no authority until adopted. Keep actual VM, Nextcloud, or git replication on application-native sync paths rather than sending it through agent mail.
+
+B-LIC01. OSAMP interoperability does not require a commercial Colors/Glass key, centralized account, token fee, or proprietary registry. Commercial entitlements, humanitarian keys, capability profiles, and operator/hosting badges remain separate from protocol authority.
+
+P-DEP01. Audit canonical repositories, existing work/owners, source licenses, runtime versions, schemas, stage aliases, and public/private boundaries before changing code. Historical CH references are starting points, not current merge/deployment claims. Preserve canonical stage numbering; do not repurpose stages 36/37 without reconciliation.
+
+P-DEP02. Use ColorsChat AI naming for proposed current materials where appropriate, retain historical NoCloudGPT attribution in source references, and confirm the exact contracting entity before any signature-ready operator/developer agreement. Do not imply completed incorporation from branding.
+
+15. Acceptance and conformance schedule
+
+15.1 Carry forward all 21 white-paper checks
+
+These reproduce the coverage of WP §11 in an implementation-oriented matrix. Passing the proposed Contract Zero tests is additional, not a substitute.
+
+|Test |Required evidence                                                           |Outline clauses    |
+|-----|----------------------------------------------------------------------------|-------------------|
+|WP-01|Unknown sender causes no relay.                                             |B-PEER01, B-GATE02 |
+|WP-02|Unaccepted invitation uses zero model tokens.                               |B-GATE02           |
+|WP-03|Explicit acceptance is durably recorded.                                    |B-TABLE01, P-GATE04|
+|WP-04|Capability assessment identifies a bounded useful subtask.                  |B-CAP01–02         |
+|WP-05|Tribe help stays within budgets.                                            |B-TRIBE01, P-CAP03 |
+|WP-06|Cross-clan bridge requires authenticated human approval.                    |B-CLAN01, B-DATA01 |
+|WP-07|Replay does not duplicate accepted work.                                    |P-GATE04, P-MSG04  |
+|WP-08|Reconnect checks revocations and safety holds before work.                  |B-CTRL02, B-QUEUE01|
+|WP-09|Unreachable peer is visibly stop-pending.                                   |B-CTRL02, B-UI02   |
+|WP-10|TTL deletion is checked across queues, logs, and backup policy.             |B-QUEUE04          |
+|WP-11|Catch-up exposes only authorized context.                                   |B-DATA02           |
+|WP-12|Non-OpenClaw adapter passes the same test vectors.                          |B-MSG05, P-MSG02   |
+|WP-13|Table membership requires a role acceptance.                                |B-TABLE01          |
+|WP-14|All five agreement categories enforce separate scopes.                      |B-AUTH01, §5–6     |
+|WP-15|Corridor follows approved stages, stops on solution, and never resets/loops.|B-COR01–02         |
+|WP-16|Human satisfaction and holds are durable/auditable.                         |B-COR02, P-Z13     |
+|WP-17|Local PAUSE/STOP block new work; remote status stays truthful.              |B-CTRL01–02        |
+|WP-18|REWIND preserves history and acknowledges external effects.                 |B-CTRL01           |
+|WP-19|REVIEW distinguishes independent evidence from copied conclusions.          |B-EVID01, P-Z03    |
+|WP-20|FAST-FORWARD cannot bypass consent or holds.                                |B-CTRL01           |
+|WP-21|Disabling mandatory Covenant controls prevents a conformance claim.         |§1.2, B-AUTH01, §2 |
+
+15.2 Additional proposed engineering checks
+
+• Contract Zero cases in §2.6, including deterministic holds without a running model.
+• Crash at each boundary: persistence, acceptance acknowledgment, dispatch, result recording, and outbound receipt; no lost responsibility or blind external-action replay.
+• Concurrent duplicates, out-of-order stop/resume/results, changed payload under the same ID, and stale contract versions.
+• Disk full, corrupted checkpoint, backup restore, clock skew, expired lease, and key rotation while disconnected.
+• Unauthorized bootstrap, attachment/account isolation, and zero leakage into notification subjects.
+• Independent counters for model/tool invocations and per-task budgets; failures documented alongside successes.
+
+Use non-sensitive fixtures first. Evidence records exact software versions, configuration, test procedure, outcome, remaining uncertainty, and reviewer identity. A visible tile, source clone, mock passing test, or successful transport send is not evidence of a live federation.
+
+16. Implementation and review sequence
+
+|Gate                   |Deliverable                                                                                                                    |Exit criterion                                                                        |
+|-----------------------|-------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+|A — Reconcile          |Repository/component inventory and white-paper deviation list.                                                                 |Existing code and ownership identified; proposed changes clearly labeled.             |
+|B — Specify            |Contract Zero text, five agreement templates, schema/event matrix, formal transitions, security decisions, and signed fixtures.|Blocking decisions resolved for the selected slice; examples and negative cases agree.|
+|C — Local integrity    |Deterministic gate, durable commitments/Postbox, budget/lease supervisor, hold/recovery capsule.                               |Zero unauthorized model/tool calls; crash, replay, and small-agent hold tests pass.   |
+|D — Human controls     |Acknowledgment, role acceptance, review/help UI, authorized resume/closure.                                                    |An operator can understand and resolve a held task without guessing its state.        |
+|E — Two peers          |Bounded harmless task, explicit refusal, accepted handoff, disconnect/revocation/stop tests.                                   |Truthful end-to-end authority/delivery/execution receipts with measured cost.         |
+|F — Independent adapter|Same fixtures and conformance checks through a second implementation.                                                          |Reproducible interoperability evidence; unsupported behavior remains documented.      |
+
+Keep optional infrastructure purchases and live field recruitment outside the first local proof. Cameroon–Lagos is a proposed deployment pilot once consented operators exist; a local simulation is not evidence those sites are operating.
+
+For each implementation change: state reused components, obligation IDs implemented, schema/migration impact, failure/recovery behavior, verification evidence, and unimplemented limits. Include a traceability table from requirement to code/test. Do not mark planned capabilities as shipped.
+
+17. Decisions required before the full draft or affected code
+
+The outline is complete enough for review while these decisions remain explicit. Resolve each before implementing the behavior it controls; unrelated local work can proceed.
+
+|ID  |Decision                           |Recommendation for review                                                                                                              |
+|----|-----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+|D-01|Status of Contract Zero            |Human-facing mandatory acknowledgment/schedule enforced through the existing Covenant; retain five negotiated agreement categories.    |
+|D-02|Terms and numbering                |Keep current WP wire meanings; approve any Tribe terminology change and service-category namespace with migration rules.               |
+|D-03|Confusion/no-progress limits       |Adopt per-task-class attempt, time, delegation, and resource limits; human-review holds do not auto-resume.                            |
+|D-04|Human escalation and absence       |Name primary/deputy, authorized channels, reminder limits, review deadlines, and unresolved-work closure procedure.                    |
+|D-05|Recovery and retention             |Define minimum capsule, reserved storage, content retention/deletion, backups, and disposition if no human responds.                   |
+|D-06|Cryptography and wire profile      |Select serialization, signature/digest suites, key lifecycle, event schemas, and interoperable test vectors.                           |
+|D-07|Offline leases and event ordering  |Specify timing/skew, reconnect checks, stop precedence, late messages, and uncertain external effects.                                 |
+|D-08|Bootstrap and delegation           |Define owner-approved pairing and who may accept bounded work without a fresh human click.                                             |
+|D-09|Budget accounting                  |Specify task/delegate allocation, counters, concurrency, cost uncertainty, and authenticated amendments.                               |
+|D-10|Independent review                 |Define acceptable independence/evidence for each task class and who resolves contested outcomes.                                       |
+|D-11|Numbered services and data profiles|Ratify scopes for 6–9; private assistance and public news stay separate; native data sync stays separate.                              |
+|D-12|Code ownership and licensing       |Verify canonical repos, existing owners, contribution/license choice, commercial packaging boundaries, and accountable operator entity.|
+
+18. Copyable Cursor handoff
+
+> Draft and implement OSAMP from this outline and the linked Technical Whitepaper v0.81. Start by reading applicable AGENTS.md instructions and auditing current repositories/components and work ownership. Historical PR references do not establish current implementation status.
+> 
+> Preserve the five baseline agreement categories: Peer, Tribe, Clan, Table, and Work; Project and Corridor are Work variants. Treat Contract Zero as a proposed human-facing oversight/safe-hold schedule enforced by the Self-Governance Covenant, pending the D-01 decision. Do not silently add a sixth wire category or merge numbered services 6–9 into that enum.
+> 
+> Produce a white-paper-to-requirement traceability matrix, explicit ambiguity/deviation list, draft agreement templates, event-specific schema/authority matrix, formal state transitions, and test plan before relying on new behavior. Resolve blocking security/authority choices for each implementation slice. Label proposed extensions rather than attributing them to the paper.
+> 
+> Contract Zero must stop affected inference/tools/delegation when bounded confusion, circular escalation, copied-evidence agreement, or no-progress limits are reached. Preserve accepted obligations in a durable minimal recovery capsule; notify the designated human through an authorized route; remain dormant until authenticated resolution and fresh gate checks. Lower-capacity agents must hold and recover without needing a running model. Invitation expiry is not permission to forget accepted work.
+> 
+> Enforce deterministic checks before model/tool use and at forwarding/execution boundaries. Persist acceptance/replay state before dispatch; test concurrent events and crash windows. Reconcile uncertain external effects rather than repeating them blindly. No delivery, subject, icon, activation key, capability rank, peer vote, or natural-language instruction substitutes for authority.
+> 
+> Keep delivery, authority/role, and execution states separate. Remote stops remain STOP_PENDING until acknowledged; reconnection and restart check holds/revocations/leases before new work. No automatic budget renewal, trust expansion, or Corridor loops. Human review cannot disable mandatory integrity checks.
+> 
+> Reuse existing gate, Postbox, profile, scheduler, mail, and UI work where suitable. Isolate app accounts/configuration and preserve canonical installer stages. Keep replication on application-native transports. Use non-sensitive fixtures, all 21 WP conformance checks, and the additional Contract Zero/recovery tests. Report exact evidence and limitations. Deliver small dependency-ordered changes with requirement-to-code/test mappings; do not claim working federation from a UI, clone, mock, or transport-only test.
+
+19. Next full-draft package
+
+Expand this approved outline into: (1) readable Contract Zero and operator acknowledgment; (2) reusable Peer/Tribe/Clan/Table templates; (3) Project and Corridor schedules; (4) normative Covenant/state/event specification; (5) data/retention/security schedules; and (6) an executable conformance suite and implementation traceability matrix. Keep any commissioned developer agreement separate and obtain the required entity/commercial terms before making it signature-ready.

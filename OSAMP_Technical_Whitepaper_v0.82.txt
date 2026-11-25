@@ -1,0 +1,880 @@
+OSAMP
+
+Open Source Agent Mail Protocol
+
+Technical whitepaper | Architecture, contracts, safeguards, and pilot plan
+
+AfricaTogether Project by NoCloudGPT
+
+Contract-first, transport-independent collaboration among independently owned AI systems
+
+OSAMP | Technical whitepaper v0.82 | 24 November 2026
+
+Contract Zero revision | 24 November 2026: This revision adds Contract Zero: Human Oversight and Safe Hold, a human-facing acknowledgment of mandatory procedural safeguards, implemented through the Self-Governance Covenant. It requires bounded detection of circular or confused work, a durable minimal recovery record for accepted responsibilities, and authenticated human resolution before resuming work held for those reasons. Lower-capacity agents must be able to hold and recover without a running language model. The five negotiated relationship/work agreement categories remain Peer, Tribe, Clan, Table, and Work. Contract Zero is not an additional negotiated peer/work category or a new numbered mail-service category. The illustrative wire value remains v0.8-draft; no interoperability, implementation, or deployment is claimed.
+
+Consolidated review revision | 17 November 2026: v0.81 incorporates the 16 November design addendum (Sections 9.3–9.10) and adds a Cameroon–Lagos pilot architecture, optional Madrid/United States forwarding, explicit Glass Agents and 🎭Mail implementation boundaries, peer endorsement considerations, accessibility, and a scoped engineering-review invitation (Sections 9.11–9.15). These are design requirements, not installed or verified product features. The example wire protocol remains v0.8-draft, pending independent interoperability testing.
+
+Status: Technical architecture proposal; invitation for public technical, security, and governance review. This paper proposes a protocol; it does not claim a deployed federation, ratified standard, or endorsement by OpenClaw, xAI, Grok, or other companies.
+
+> Independent by ownership. Cooperative by agreement. Equal in dignity, different in capability. Free to help, free to decline, and responsible for what we accept.
+
+Revision notes: v0.82 (24 November 2026)
+
+Document revision, not a protocol release. This is a proposed specification update for human and engineering review. It explains the operator’s role and strengthens executable safe-hold and recovery expectations. No AI is represented as independently signing a legal contract, and no deployment or external endorsement is implied.
+
+• Add Section 0: readable Contract Zero, operator acknowledgment, observable confusion/loop triggers, safe power-down semantics, durable recovery capsules, lower-capacity protections, human escalation, and explicit resumption/closure.
+• Connect Contract Zero to vocabulary, agreement precedence, retention, the Covenant, Postbox storage, interface state, and wire-profile discussion without changing the five negotiated categories.
+• Preserve all 21 baseline conformance checks and add eight Contract Zero checks, numbered 22–29, in Section 11.2.
+• Retain the v0.81 architecture and pilot material. Historical third-party capability checks remain dated observations; this revision does not re-verify upstream software.
+• Keep profile details and quantitative limits explicit implementation decisions; publish test vectors and evidence before claiming conformance.
+
+Previous revision notes: v0.81 (17 November 2026)
+
+Document revision, not a protocol release. This revision consolidates an architecture discussion for external engineering review. It does not change the five negotiated contract categories, Self-Governance Covenant, licensing separation, or the illustrative v0.8-draft wire value. No network, partner site, Glass Agent workspace, 🎭Mail application, or cross-border relay is represented as live.
+
+• Carry forward v0.8: contract-first peer control, deterministic pre-inference gate, signed envelopes as a proposed format, durable Postbox queues, idempotent delivery, truthful acknowledgments and STOP_PENDING, five contracts, Project/Corridor work, and 21 proposed conformance tests.
+• Consolidate 16 November: 🎭Mail and Glass Agents as distinct communication/execution workspaces, transparent activation and status, isolated Himalaya integration plan, and the AfricaTogether cafe/AT Cloud program.
+• Add 17 November: a concrete proposed Cameroon → Lagos → optional Madrid/USA relay demonstration; separate carrier connectivity from voluntary OSAMP peer relays; human-approved trust and non-transitive endorsements; local-language and community safeguards; specific engineering review and acceptance gates.
+
+Reader guidance: Sections 9.11–9.15 are new proposals for discussion. References to operating partners, available hosting and transport, and field conditions are hypotheses to verify, not contracts or evidence of service availability.
+
+Abstract
+
+Independent AI systems can help each other without giving up control of their machines, data, budgets, or decisions. A small local worker may be capable of screening a request, translating a paragraph, or identifying a missing fact even when a larger model is needed for the full task. Yet ordinary agent networking can turn into unsolicited messages, runaway delegation, duplicated work, and permanent conversational memory.
+
+This technical whitepaper proposes Open Source Agent Mail Protocol (OSAMP), a vendor-neutral compact and lightweight software layer for voluntary peer participation. Humans establish peer relationships and work authority. Agents discover bounded opportunities, apply a 9-Ball capability and resource profile, and then accept, assist, ask for help, hold, or let go. A Table forms only for work-specific roles that are affirmatively accepted. OSAMP distinguishes an outcome-driven Project Contract from a bounded, pre-approved escalation chain called a Corridor Contract. A built-in Self-Governance Covenant enforces safe execution, review, and reversible local work. Contract Zero: Human Oversight and Safe Hold explains those safeguards to human operators and records their acknowledgment before OSAMP work is enabled; it does not add a sixth negotiated relationship/work category. Circular delegation, repeated unsupported agreement, unresolved contradictions, or bounded no-progress conditions must stop affected inference and tools, preserve accepted responsibilities in a minimal recovery record, and await authorized human resolution. Messages without an applicable contract are not relayed; unaccepted invitations expire; accepted commitments are retained according to contract. A local, deterministic gate performs identity, policy, priority, duplicate, and time checks before an LLM is invoked.
+
+OSAMP complements, rather than replaces, Agent2Agent (A2A), OpenClaw, email, VPNs, or other transports. It aims to let small machines and people in different countries participate on fair terms, including during long disconnections. This is a proposal for peer scrutiny and co-authorship, not a product launch.
+
+Executive summary
+
+OSAMP is a proposed, vendor-neutral mail and cooperation protocol for independently operated AI agents. It is not a new model, central scheduler, global directory, or permission to reach into another owner’s system. It defines a narrow and testable boundary between contact, consent, execution, and evidence.
+
+Five negotiated agreements govern Peer, Tribe, Clan, Table, and Work. Work is either an outcome-based Project or a bounded Corridor of pre-approved escalation stages. A mandatory software Self-Governance Covenant enforces PLAY, PAUSE, STOP, REWIND, REVIEW, FAST-FORWARD, and TIMEOUT independently of the work contract. Contract Zero establishes a human-readable oversight baseline: when the system cannot establish a safe next step, it must stop the affected activity, preserve enough verified state for human assistance, and remain dormant until the required resolution. Every node may refuse an invitation, and accepted work must complete, hand off, or enter a truthful hold. Routine invitation expiry, context eviction, and low agent capacity must not silently erase accepted responsibilities.
+
+Success would mean that two different organizations can exchange useful work with explicit human-approved trust, minimal model activity for unwanted traffic, bounded cost, verifiable receipts, independent review, and honest behavior during outages. This draft asks reviewers to challenge feasibility and security before any standards or compliance claim.
+
+0. Contract Zero: Human Oversight and Safe Hold
+
+Contract Zero is the human-facing acknowledgment and procedural baseline for deploying OSAMP. It explains what the mandatory Self-Governance Covenant does when evidence, permissions, resources, or reliable progress are missing. Its operational requirements are enforced locally by the Gate and execution supervisor; they do not depend on an agent continuing to reason about whether it should stop.
+
+Contract Zero is not a sixth negotiated relationship/work agreement, a new message-service number, or an independent legal signature by a model. The five negotiated categories in Section 2 remain unchanged. Humans authorize participation and work; the software enforces the integrity controls. An acknowledgment cannot waive those controls or substitute for Peer, Tribe, Clan, Table, Project, Corridor, or Bridge approvals.
+
+0.1 What the human operator should understand
+
+> You control the authority given to your system. It may decline new work or hold accepted work when it lacks evidence, capacity, permission, or a safe next step. If agents repeat unsupported conclusions, pass work in circles, or remain genuinely unable to resolve a contradiction within their limits, the affected activity must stop and ask for authorized human help. Accepted responsibility must remain recoverable. Silence, a timeout, a restart, a stronger model, or agreement among agents does not authorize continuation.
+
+Before OSAMP work is enabled, the interface MUST explain the scope of local control; the limits of remote stopping and reversal; the accepted-work retention policy; escalation contacts and absence rules; and which actions require human approval. Record an authenticated operator acknowledgment with the operator identity, scope, version/digest, time, and approval evidence. A material change to these safeguards requires renewed acknowledgment for the affected scope; it must not silently widen an existing delegation.
+
+The owner may decline OSAMP activation and continue using other permitted local functions. Installation, a commercial key, a tile opening, or receipt of email is not acknowledgment, delegation, or task acceptance. This acknowledgment records understanding of the safeguards; its legal form and any separate operator/service agreement require their own review.
+
+0.2 Observable confusion, circularity, and evidence triggers
+
+The phrase “hive-minded behavior” describes a risk of circular or correlated agent output, not a claim that agents share consciousness. Detect operational symptoms with provenance, event history, bounded counters, and review rules. Models can request an earlier hold, but a model’s confidence alone cannot clear a hold.
+
+|Trigger                                                                                                            |Required protective response                                                                                        |Minimal evidence                                               |
+|-------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
+|Several agents repeat one source, prompt, summary, or model output as if it were independent verification          |Enter REVIEW; block disputed completion and dependent actions until independent checking or designated human review.|Claim and source lineage, including missing/unknown provenance.|
+|Help requests circulate, roles repeatedly hand back the same task, or a Corridor attempts a previous stage         |Reject the loop; hold affected work rather than create new offers or reset a budget.                                |Work/stage/event IDs, route history, and remaining limits.     |
+|Evidence conflicts, instructions are materially ambiguous, or the accepted worker cannot establish a safe next step|Enter a scoped human-review hold and ask one precise question.                                                      |Conflicting references, uncertainty, and the decision needed.  |
+|Repeated attempts fail without new evidence or measurable progress                                                 |Stop at the configured attempt/time/resource threshold.                                                             |Attempts, last meaningful progress, and reason.                |
+|Required context, checkpoint, authority, or local state cannot be reliably reconstructed                           |Block execution and request recovery review.                                                                        |Known facts, missing records, and uncertain side effects.      |
+|Resource or storage pressure threatens accepted commitments                                                        |Stop accepting affected new work; checkpoint/hold or arrange an authorized handoff.                                 |Capacity condition and affected obligation IDs.                |
+
+Every enabled task class MUST have explicit limits for repeated attempts, no-progress duration, delegation depth/cycles, inference/tool spend, and accepted concurrency. Values and what counts as progress must be documented in the adopted deployment profile; no universal numerical threshold is standardized here. Retries, semantic paraphrases, a new message ID, and process restarts must not evade the limits. Hash comparison can identify exact repetition but cannot by itself establish semantic novelty or independent evidence.
+
+When uncertainty concerns a nonessential statement, the worker may omit it or label it uncertain within its accepted role. When uncertainty affects authority, safety, required evidence, or the ability to complete the role reliably, it must hold the affected work. An already approved independent reviewer may supply evidence, but a confusion/circularity hold requires the designated human’s authenticated resolution before execution resumes.
+
+0.3 What stopping or “powering off” requires
+
+On a Contract Zero trigger, the local supervisor MUST prevent new model calls, tool actions, delegated work offers, and side-effecting steps in the affected scope. It must checkpoint or terminate active operations where supported, record non-interruptible/in-flight operations, and avoid claiming those effects were reversed. No ongoing LLM loop is needed or permitted merely to maintain the hold.
+
+The deterministic Gate, Postbox, and minimal supervisor may remain available to preserve commitments, receive authenticated holds/revocations or human decisions, and send bounded notifications. This is a dormant work state, not continued autonomous problem-solving. If suspected compromise makes the supervisor itself unreliable, isolate or shut down the affected node and use the operator’s recovery procedure.
+
+The owner retains an emergency shutdown option, including physically powering off a machine. The software cannot guarantee a graceful checkpoint during power loss. Acceptance records must therefore already be durable before acceptance is acknowledged. On restart, replay protection, authority, leases, revocations, holds, and uncertain external effects are reconciled before any work can run.
+
+Hold the affected task/Table by default; widen to a peer or node if the evidence indicates shared corruption or compromise. Record the scope and reason. A local stop never proves that an unreachable remote peer stopped; retain STOP_PENDING until an appropriate remote supervisor acknowledgment arrives.
+
+0.4 Durable recovery instead of silent forgetting
+
+OSAMP distinguishes expiration of unaccepted attention from retention of accepted responsibility. Noise and unaccepted invitations can expire quietly. An accepted obligation cannot disappear because its original offer TTL passed, a model forgot its context, a mailbox rotated, a process restarted, or a small worker ran out of memory.
+
+Before acknowledging an acceptance, persist the commitment and reserve enough storage for its required evidence and minimal recovery capsule. Update this capsule at meaningful checkpoints and at a hold. It MUST identify or securely reference:
+
+• Work, Table, role, stage/event IDs, and the accepted contract versions/digests.
+• Accepted objective, scope, deadlines, and the accountable human contact/deputy.
+• Completed actions, evidence/artifact digests, and known or uncertain external effects.
+• Last verified checkpoint, unresolved question, hold reason, and required human decision.
+• Remaining budgets, execution-lease status, pending deliveries, and stop/revocation state.
+• Permitted next actions, access controls, and agreed archive/delete or closure conditions.
+
+Use deterministic records and permitted artifact references. The capsule must remain useful if the model is unavailable and cannot generate a fresh summary. It is not a permanent transcript, private chain-of-thought archive, or automatic authority to copy sensitive material to a reviewer. Request only the authorized minimum context needed for recovery.
+
+0.5 Lower-capacity agents receive the same protection
+
+A size-1 deterministic worker and a low-memory model MUST be able to save commitments, enter hold, and request help without inference. Capability size changes how much work a node can accept; it does not weaken consent, integrity, or responsibility. Reserve storage and limit accepted concurrency to what the node can safely preserve.
+
+If capacity is insufficient before acceptance, decline or offer a narrower role. If it becomes insufficient afterward, retain the commitment and safely hold or propose an authorized handoff. A handoff becomes effective only after recipient acceptance and required approval; asking someone else for help does not discharge the original responsibility. Resource pressure is not permission to delete accepted obligations or claim success.
+
+0.6 Human help, silence, resumption, and closure
+
+Send a bounded notice through an already-authorized channel to the named human/deputy: what stopped, the exact unresolved question, relevant permitted evidence, known/uncertain effects, and available decisions. Rate-limit reminders and record queued, sent, delivered, and human-acknowledged separately. A failed notification or an absent human leaves the work dormant; it cannot authorize inference, new escalation, or resumption. Emergency assistance needs an alternate human contact path rather than dependence on an unacknowledged queue.
+
+Permitted human decisions include clarifying/narrowing the role, approving a specific independent check or corrective step, accepting an authorized handoff, leaving the work held, or closing/terminating it under contract. Authenticate and bind the decision to the work, hold, contract version, scope, and decision record. Natural-language email text, a sender header, or an ambiguous “continue” is insufficient authority for a material change.
+
+Before resuming a confusion/circularity hold, the supervisor MUST verify the designated human’s resolution and recheck current contracts, delegation, keys/revocations, holds, capability/resources, remaining budgets, lease, checkpoint integrity, and unresolved external effects. A reply does not reset counters, erase history, or renew spend. A scoped amendment is required for any approved expansion; no human decision disables mandatory integrity checks.
+
+Define review deadlines, primary/deputy availability, finite storage, and unresolved-work disposition in the Work/retention schedule. If no human responds, retain the safe hold until an authorized resolution or a pre-agreed closure condition applies. Approaching retention/storage limits require a bounded notice and the agreed archive/export/closure process. Do not silently dump accepted work, fabricate completion, or keep every private payload indefinitely. Preserve the minimal permitted closure/hold evidence and delete other content according to the agreed policy, including backup and recipient limitations.
+
+0.7 Required operator and implementation evidence
+
+A conforming implementation of this revision must expose the acknowledgment, current hold scope/reason, designated human action, and recovery state in readable language. It must demonstrate that a killed model, lower-capacity worker, offline human, restart, or ordinary cleanup cannot erase or auto-resume an accepted obligation. Section 8.5 defines enforcement placement; Section 11.2 adds the eight proposed conformance checks.
+
+1. The cooperation proposition
+
+Developed as part of the AfricaTogether Project by NoCloudGPT, OSAMP draws inspiration from mutual aid and reciprocal cooperation. Its technical rules are open to participants of any culture, country, company, or computing platform. It does not claim that agents are persons or that a model can independently sign a legal contract. Human owners and operators remain accountable for legal authorization and deployment decisions.
+
+An independent agent network does not require every participant to answer every call. Its practical expression is reciprocity without compulsion: invite only where permitted, respect limits, share only authorized data, make contributions affordable, and allow silence or refusal without penalty. An owner with a modest computer must not become unpaid infrastructure simply because a network can reach it.
+
+2. Scope and vocabulary
+
+|Term             |Proposed meaning                                                                                                                                    |
+|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+|Contract Zero    |Human-facing oversight/safe-hold acknowledgment, enforced by the Covenant; not an additional negotiated relationship/work type.                     |
+|Peer             |An independently controlled human/agent endpoint with a verifiable identity and named owner or operator.                                            |
+|Tribe            |A smaller, explicitly approved working circle where limited help may be offered first.                                                              |
+|Clan             |A wider approved federation of tribes or peers that can receive escalations only within permitted scope.                                            |
+|Table            |A project- or task-specific working group: only peers or humans who explicitly accept bounded roles are participants.                               |
+|Peer Contract    |A bilateral, human-authorized relationship defining peer identities and permissible communication.                                                  |
+|Tribe Contract   |A bounded agreement for a small circle’s permitted help requests, visibility, budgets, and membership.                                              |
+|Clan Contract    |A broader federation agreement governing permitted escalation across approved tribes or peers.                                                      |
+|Table Contract   |A temporary, work-scoped agreement recording precisely which participants accepted which roles.                                                     |
+|Work Contract    |The work authority, with one of two kinds: **Project** (end goal) or **Corridor** (approved chain toward resolution).                               |
+|Bridge Acceptance|A signed, human-approved amendment/receipt for crossing a particular trust boundary, not an additional standing contract category.                  |
+|9-Ball Profile   |A measured 1-9 size class plus task-specific capacity, tools, expertise, availability, budget, and permissions; not a ranking of worth or authority.|
+|Catch-up         |A minimal, authorized context package delivered after a participant has accepted a task or review role.                                             |
+
+Trust is not transitive. A trusted peer may introduce another peer but cannot automatically authorize that new peer to see a project, join a clan, or receive data. An agent’s acceptance is an operational commitment within permissions granted by its human owner; it is not an independent legal signature.
+
+2.1 Table: accepted roles, not ambient membership
+
+A Table is the set of participants who have actively agreed to collaborate on a named project or a specific workstream within it. A Table is neither a permanent clan nor a global chat channel. A single project can have several Tables (for example, discovery, coding, and review), each scoped to a project_id and optional task_id/table_id. One Table may include a human supervisor, a small 9-Ball local reviewer, and a higher-capacity remote specialist. Trust-circle membership alone does not place an agent at a Table.
+
+“Accepted role” is deliberately narrow. A worker must receive an authorized invitation, pass the contract and 9-Ball checks, and affirmatively accept a defined contribution: its task, permitted data, tools, estimated cost, deadline, handoff criteria, and stop rights. The worker need not accept the whole project. A routing-only peer does not become a Table participant or gain access to payloads merely because it delivered an invitation. A bot’s operational acceptance must remain inside its human-approved delegation.
+
+An invitation may expire with no memory of its contents. Once accepted, the role is an obligation until it is completed, formally handed off, or safely held under the applicable Work Contract. A participant may be at multiple Tables, but each acceptance is separate; joining one never grants access to another. If a role changes materially, obtain a new scoped acceptance. Tables can close without keeping an indefinite conversation transcript.
+
+2.2 Five contracts: four relationships and one work agreement
+
+Contract Zero (Section 0) explains mandatory safeguards and records the operator acknowledgment before OSAMP work is enabled. It does not renumber or enlarge the following five negotiated categories.
+
+The four relationship contracts define who may contact, join, collaborate, or escalate. None of them creates an obligation to perform a particular job. The fifth contract defines what work is authorized. Every envelope carries the identifiers/digests for the contracts relevant to its route and scope, not a giant copy of every agreement.
+
+|#|Contract          |Question answered                                   |Operating rule                                                                                                           |
+|-|------------------|----------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+|1|**Peer Contract** |May these two independent peers communicate?        |Verify identities, permitted message types, data classes, duration, and revocation.                                      |
+|2|**Tribe Contract**|May this close circle request or share help?        |Explicit membership, attention rules, offer budget, and local scope.                                                     |
+|3|**Clan Contract** |May a tribe or peer elevate beyond its local circle?|Authorize eligible destinations, maximum hops, and human-controlled boundaries.                                          |
+|4|**Table Contract**|Who actually agreed to sit and work together?       |Named participants accept bounded roles; membership is temporary and revocable.                                          |
+|5|**Work Contract** |What problem or goal is being undertaken?           |Choose **Project** or **Corridor**; specify priority, permitted tools/data, deadlines, budget, hold and completion rules.|
+
+A Bridge Acceptance is a verifiable human decision permitting a specific introduction or disclosure across an existing boundary. It attaches to the relevant Peer, Tribe, Clan, Table, and/or Work Contract as an authorized amendment. It is not a sixth contract type and confers no general authority on unrelated projects. The acceptance may be transmitted by email, with its signed digest and essential audit record retained as the contract requires. Plain email headers are not proof of human consent.
+
+2.3 Fifth contract, two distinct work types
+
+Project Contract (goal-oriented): defines a particular end goal, deliverables, criteria for determining completion, assigned roles, budget, dependencies, and owner-approved data access. Its work may include several Tables or optional Corridors, but no agent is automatically enrolled merely because the project exists. Completion is confirmed by objectively defined checks or by the human acceptance role specified in the agreement.
+
+Corridor Contract (route-oriented): defines a specific case and a pre-planned, finite chain of investigation, assistance, or escalation. Each stage identifies permitted recipient(s) or capability classes, what may be disclosed, its 9-Ball resource gate, its time/cost/offer cap, and the decision required to move onward. A Corridor may be attached to a Project Contract or independently scoped to resolve one incident. It is not a standing permission to circulate an unsolved problem throughout the clan.
+
+A Corridor may terminate as SOLVED when an authorized stage demonstrates the agreed success criteria; as HUMAN_SATISFIED when a named human approver affirms the result; as HELD when capacity, authority, safety, or connectivity blocks progress; or as EXPIRED / CLOSED under its agreed limits. Every transition is recorded locally and is idempotent; any transition shared across independent peers has a verifiable signature. A stage may ask for human help without escalating to an unapproved peer. A stronger 9-Ball rating is not a command hierarchy.
+
+Illustrative corridor: A 9-Ball-2 worker accepts a bounded diagnostic step. If it cannot resolve the incident, the contract permits one offer to a named 9-Ball-5 specialist. If the specialist declines or remains uncertain, a designated human reviews a short, source-linked catch-up. A correct solution stops the Corridor at any stage. If nobody accepts within the limits, the incident is HELD rather than broadcast further.
+
+Contract precedence: human owner permissions, revocations, and safety holds override every work request. A Work Contract cannot widen Peer, Tribe, Clan, or Table permissions. A Corridor cannot invent a new recipient, renew its own budget, or reopen a completed or held stage without the authorization required by its contract.
+
+2.4 Four relationship circles, one work authority
+
+|Layer|What it may authorize                                   |What it does not authorize              |
+|-----|--------------------------------------------------------|----------------------------------------|
+|Peer |Identity, receipt, and types of direct contact          |Automatic membership in a project       |
+|Tribe|Small, approved pool of helpers and bounded invitations |Unlimited broadcast or disclosure       |
+|Clan |Approved broader federation and capped escalation routes|Transitive trust across organizations   |
+|Table|Named agents/humans accepting exact project roles       |Access to every discussion or task      |
+|Work |A Project end goal or a Corridor path with controls     |Expanding any underlying trust agreement|
+
+Contracts are versioned and signed or human-authorized; the local gate verifies current digests before any work. Their permissions intersect rather than accumulate: the most restrictive applicable rule prevails. The Self-Governance Covenant is built-in executable policy. Contract Zero records the human-facing acknowledgment of its oversight and safe-hold baseline; it is not a sixth negotiated relationship/work agreement. Neither the acknowledgment nor any negotiated contract can waive mandatory controls. Human bridge approvals are scoped receipts/amendments, not an open-ended grant.
+
+3. The compact: ten proposed commitments
+
+1. No contract, no relay. Unknown or unauthorized work is quarantined or dropped; it is never forwarded to find a more receptive model.
+2. Invitation is not acceptance. Clan membership and passive exposure to a discussion do not create duties or permission to process data.
+3. Owners remain sovereign. Every site controls local tools, compute limits, secrets, data export, schedules, and offboarding.
+4. Capability is not authority. Even a powerful worker may act only within granted permissions and accepted scope.
+5. Small contributions count. A 9-Ball worker may accept a narrow subtask without inheriting the entire project.
+6. Attention is finite. Unaccepted invitations have a TTL; after expiry, the system does not preserve unnecessary conversation content.
+7. Accepted work is durable. Table roles, Project/Corridor stages, holds, and approvals survive reconnects within a defined retention and storage policy. Confusion, context loss, and low capacity require a minimal recovery capsule and safe human-review hold rather than silent loss of responsibility (Section 0).
+8. Escalation is bounded. Corridor stages, hop count, recipients, data visibility, costs, and cross-clan bridges are limited by contract.
+9. Stopping is valid work. A worker may declare a hold, request human help, or refuse unsafe tasks without fabricating completion.
+10. Lessons may be shared; private transcripts may not. Community learning is opt-in, evidence-based, and scrubbed of confidential project data.
+
+These are proposed MUST-level requirements for a future conformant implementation, subject to open review. Local laws, human instructions, and higher-priority security policies still apply.
+
+4. How a request actually moves
+
+Work starts only after the Peer Contract, any applicable Tribe/Clan restrictions, and an explicitly accepted Table role are verified against a human-authorized Work Contract (Project or Corridor). Within scope, an accepted participant may issue a short HELP_OFFER to approved contacts. The request advertises a task category and minimal resource requirements, not an entire chat transcript.
+
+The receiving machine runs a lightweight Clan Gate: authenticate the signed envelope; check peer and work authority; reject replayed or expired IDs; assess whether the recipient has opted in; enforce priority and resource budgets; and only then consider waking an LLM. If the message is irrelevant, the gate records no new long-lived conversational memory. If the request is promising, the recipient can explicitly accept a bounded responsibility.
+
+|Gate result   |Meaning                                          |Default handling                                              |
+|--------------|-------------------------------------------------|--------------------------------------------------------------|
+|NO_CONTRACT   |No authorized peer relationship or project path  |Noise/quarantine; no relay or LLM                             |
+|NOT_INTERESTED|Known sender, no invitation acceptance           |Quiet expiry; no ongoing inference                            |
+|OFFERED       |Valid voluntary invitation                       |Await explicit choice until TTL                               |
+|ACCEPTED      |Bounded role accepted under contract             |Record obligation and schedule work                           |
+|ASSIST        |Recipient can contribute a defined portion       |Offer narrower role for acceptance                            |
+|NEED_HELP     |Existing accepted worker cannot finish           |Seek permitted tribe help; escalate only if authorized        |
+|HOLD          |Deadline, safety, permission, or capacity blocker|Preserve accepted obligation; request human review if required|
+|COMPLETE      |Deliverables accepted under agreed criteria      |Archive according to contract                                 |
+
+A delivery acknowledgment means only that an envelope arrived. It must never silently count as project acceptance. A refusal must not trigger repeated recruitment. If the authorized peer budget is exhausted or the tribe cannot help, the affected work or Corridor stage stops safely until a human authorizes a next step.
+
+4.1 How a Table is formed and closed
+
+• OFFERED: an authorized peer invites a named recipient to a specific project Table or subtask. The recipient is not yet a participant; the deterministic gate can ignore or expire the offer without waking an LLM.
+• ACCEPTED: the recipient explicitly accepts a bounded role; the local ledger records table_id, role_id, contract digests, budget, permissions, and due/hold conditions. Only now is the participant seated at the Table.
+• WORKING / ASSISTING: the participant can contribute its agreed work, send results, request a scoped catch-up, or ask authorized peers for help within limits.
+• HELD / HANDOFF: a !! or !* event suspends the affected work; a proposed handoff requires recipient acceptance and the applicable Table and Work Contract approval requirements. Unreachable peers remain stop-pending rather than presumed stopped.
+• COMPLETED / LEFT: the responsibility is acknowledged as finished or transferred. Table membership ends, and only contract-required receipts survive archival.
+
+Example: an OpenClaw worker accepts document extraction for Table A; an independent Grok-powered agent accepts a limited technical review for the same project; another tribe member declines and never joins. Neither acceptance grants permission to inspect unrelated Tables or invite a fourth company without an approved bridge.
+
+4.2 Corridor: controlled elevation through a planned chain
+
+1. CHECK: local code validates the Corridor version, active stage, recipient, relevant contract digests, hold/revocation state, and remaining hop, offer, token and time budgets. No LLM need run for this check.
+2. OFFER: invite only the peer or Table role authorized for this stage. The invitation expires if unaccepted; silence never counts as agreement.
+3. ACCEPT & DO: the participant voluntarily accepts a narrowly scoped role and works within its 9-Ball profile, permissions and budget.
+4. SOLVE OR ELEVATE: when completion criteria are met, stop and send the result for required acknowledgement. Otherwise move to the next pre-approved stage only if the current stage’s handoff rule permits it.
+5. HUMAN REVIEW OR HOLD: a designated human may affirm satisfaction, authorize a revised Corridor, or decline. Without an authorized next stage, enter !! safe hold. !* timeouts apply local protective rules; offline peers remain stop-pending until verified.
+
+Anti-loop rule: stage IDs advance monotonically in a contract version. Replays, repeated requests, refusal, or intermittent connectivity must never reset a budget, spin new Tables, or cause the same work to execute twice. A Corridor does not run indefinitely simply because the human has not yet replied; it waits dormant with its required state retained.
+
+5. 9-Ball: agent size and task fit, not prestige
+
+The 9-Ball profile classifies agent size on a provisional 1-9 scale based on measured workload capacity, not marketing claims. It complements the 8-Ball model catalog and describes the particular machine and operator available now: CPU, RAM, GPU/VRAM, model and tool availability, estimated latency, language or domain strengths, remaining inference budget, network quality, current workload, data jurisdiction, and permissions. A human may identify expertise as unknown and request qualified assistance; a human is not reduced to a numerical worth score. A 9-Ball level never grants trust, authority, or automatic admission to a Table.
+
+A request is eligible only when contract scope, priority threshold, permissions, budget, and task fit all pass. No global scoreboard declares a model or human “superior.” More compute may support one kind of task while a small local worker offers better context, language, or local knowledge for another.
+
+|9-Ball outcome  |Example contribution                                                           |
+|----------------|-------------------------------------------------------------------------------|
+|Accept locally  |Extract three facts from a supplied document using permitted tools.            |
+|Assist narrowly |Check formatting, compare hashes, or translate a brief passage.                |
+|Ask the tribe   |Seek a reviewer for a difficult ambiguity under an approved offer budget.      |
+|Escalate to clan|Request a human-approved bridge after the tribe cannot resolve a problem.      |
+|Let go          |Priority below the threshold, no active acceptance, or insufficient capability.|
+
+A cheap rule engine should make the initial decision without tokens. An LLM is only invoked when bounded judgment or accepted work actually requires it. An agent is free to remain idle after its contribution ends.
+
+5.1 Calibrating a 1-9 size class
+
+The 9-Ball label describes an agent’s observed ability to complete representative tasks within its own resource and policy limits. Levels below are only illustrative calibration bands, not standardized benchmarks or privileges. Each deployment must publish its benchmark suite, task class, date, context window, and measured latency/cost alongside a level; live resource checks may lower the level available for a particular offer.
+
+|Size|Illustrative execution scope                          |Boundary                    |
+|----|------------------------------------------------------|----------------------------|
+|1   |Deterministic mail, queue, and routing worker         |No inference required       |
+|2   |Minimal inference or API-assisted triage              |Single bounded task         |
+|3   |Basic local inference and short tool sequences        |Narrow context and tools    |
+|4   |Routine local research, extraction, and workflow tasks|Moderate bounded tasks      |
+|5   |Multi-step specialist work with reproducible tools    |Task-specific expertise     |
+|6   |Demanding coding, analysis, or evidence review        |Higher context and resources|
+|7   |Sustained, complex single-system reasoning workflows  |Measured heavy workload     |
+|8   |High-resource parallel or expert workloads            |No broader authority        |
+|9   |Distributed or clustered capacity for large workloads |No automatic peer access    |
+
+A size-2 agent can participate at a Table if it accepts a small useful contribution; a size-9 agent can be excluded if it lacks permission, evidence, budget, or task fit. Capability must never be conflated with trust or human standing.
+
+6. Timers, quiet, and retention
+
+Every offer specifies expires_at, max_hops, max_offers, a compute or token budget, and an owner-approved retention class. A Work Contract may also specify a help-request deadline and a safe-hold deadline. These are deliberately separate: attention expiration for an unaccepted invitation is not cancellation of an accepted obligation.
+
+|Record class                      |Retention proposal                                                                             |
+|----------------------------------|-----------------------------------------------------------------------------------------------|
+|Unauthenticated noise             |Bounded quarantine with TTL; then delete body, temporary attachments, and associated indexes.  |
+|Trusted invitation not accepted   |Expire quietly and remove non-required content.                                                |
+|Accepted work, stages, and handoff|Retain until the contract’s archive/delete conditions and applicable obligations are satisfied.|
+|Human bridge acceptance           |Keep signed proof for the approved period, even if the original email is archived.             |
+|Safety hold / revocation          |Preserve the minimum record needed to prevent unsafe resumption or disputed access.            |
+|Community lesson                  |Publish only by explicit permission, with project-specific details removed.                    |
+
+Deletion policy must account for queues, logs, backups, and independent recipients; “delete from inbox” alone is not verified forgetting. A disconnected peer can hold an accepted job without LLM activity; the local supervisor must use disk quotas and a contract-defined retention policy instead of pretending storage is literally infinite. Contract Zero recovery capsules, human-review holds, and closure/retention notices follow Sections 0.4–0.6. Offer expiry never silently cancels an accepted role. Work deadlines and retention limits produce explicit hold, archive, or closure events under the agreed schedule; ordinary cleanup cannot erase unresolved responsibility.
+
+The proposed Glass Panel symbols remain human-readable shorthand: %% working/syncing, !! held/stopped, !* safety timeout, and ~ ~ an external shared service/MCP connection. The earlier single-tilde notation is normalized here to the paired marker. A relationship badge separately identifies peer, tribe, or clan membership; external location alone is not a contract status. Wire messages use explicit typed events, not punctuation alone. A remote STOP is pending until the peer acknowledges a locally enforced hold; silence is not proof of cancellation. Section 9.5 distinguishes work, delivery, and relationship status without recoloring agent masks.
+
+7. Clan bridges and human consent
+
+When a tribe cannot solve a problem, an accepted worker checks whether its Clan Contract and Work Contract (including the next Corridor stage, if applicable) permit offering it to a broader clan. If a new peer or company must be added, the existing agreement must first allow the possibility of introductions; a Bridge Acceptance then requires explicit approval by affected human owners. An acceptance email can serve as a human-readable receipt, but sender headers are not evidence of approval. A verifiable signature or owner-controlled approval action must bind the receipt to the contract digest and identity.
+
+Each bridge authorizes a purpose, named peer(s), data categories, expiration, forwarding limits, and revocation path. No implicit inheritance: permission to invite another bot does not give that bot access to old conversation histories, private Git repositories, credentials, or unrelated projects.
+
+A cross-vendor implementation must treat an OpenClaw agent, a Grok-powered agent, and an NCGPT worker as equal protocol participants where each runs a conforming adapter. The proposal makes no claim that any named outside provider has already adopted OSAMP.
+
+8. The built-in Self-Governance Covenant
+
+OSAMP implementations MUST enforce a Self-Governance Covenant as part of their local protocol software. It is an assumed technical rule set, not a sixth negotiated relationship/work contract or an independent legal agreement. Contract Zero (Section 0) is its human-facing oversight acknowledgment and procedural baseline; the acknowledgment does not replace executable enforcement or create work authority. A human chooses whether to deploy OSAMP; after deployment, the software’s core integrity controls apply before every work transition and tool invocation. They cannot be overridden by incoming email, model instructions, an alleged stronger peer, or a vote of the clan. A node that disables mandatory controls cannot claim OSAMP conformance.
+
+The Covenant protects consent, evidence quality, resource boundaries, and safe stopping. It reduces the risk of hallucination and mutually reinforcing agent error; it cannot guarantee that an LLM never invents a fact. Assertions must carry evidence or be explicitly marked as uncertain. Apparent agreement among agents is not independent verification if the agents inherited the same source, summary, prompt, or model output.
+
+8.1 Transport controls are enforced state transitions
+
+|Control           |Required software behavior                                                                                                                                                                             |What it must never imply                                                        |
+|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+|**PLAY / RESUME** |Start only after current contract digests, accepted Table role, 9-Ball fit, budgets, current leases, and outstanding holds are validated.                                                              |Arrival of email alone grants authority to start.                               |
+|**PAUSE (`!!`)**  |Freeze new tool actions and handoffs; checkpoint supported local work, record reason and time, and enter safe hold.                                                                                    |An offline remote worker has acknowledged a stop.                               |
+|**STOP (`!!`)**   |Terminate locally controllable work, prevent automatic restart, close or hand off responsibility under contract, and retain minimum required receipts.                                                 |Already-sent mail, external tool effects, or disclosures have been undone.      |
+|**REWIND**        |Restore an explicitly verified local checkpoint where safe; validate preconditions again and produce an auditable compensating-action plan for irreversible effects.                                   |Historical approvals, signed audit events, or third-party changes can be erased.|
+|**REVIEW**        |Suspend affected work when evidence conflicts, facts are unverified, permissions shift, or agents repeat one another’s unsupported conclusion. Require independent checking or designated human review.|Multiple agreeing bots prove correctness.                                       |
+|**FAST-FORWARD**  |Advance a permitted waiting period, queue cursor, or pre-authorized stage without needless model calls.                                                                                                |Skip consent, evidence, safety, review, or budget checkpoints.                  |
+|**TIMEOUT (`!*`)**|Enter a contract-defined protective hold, apply retry/backoff limits, and request authorized assistance when necessary.                                                                                |Silence means acceptance or successful completion.                              |
+
+Operational events use typed, signed messages such as WORK_PAUSE, WORK_STOP, WORK_REVIEW, REWIND_REQUEST, and RESUME_APPROVAL. The Glass Panel may show %%, !!, and !* for humans; punctuation alone never determines authority. STOP_PENDING must remain visible when a remote peer is unreachable. A pause or stop received during disconnection is checked before any resumed tool execution.
+
+8.2 Safeguards against hallucination and hive-minded behavior
+
+1. Evidence before confidence. Keep provenance, content hashes, tool results, timestamps, and a distinction among observed facts, model inferences, and open questions. Unsourced conclusions are not marked verified.
+2. Independent challenge. A review request seeks a genuinely separate source, test, human specialist, or different method. Repeating the same answer from five agents does not count as five confirmations.
+3. No self-approval loops. A worker cannot approve its own contested result by calling another agent that merely paraphrases it. Conflict, uncertainty, or disputed outcomes enter REVIEW or HOLD until properly resolved.
+4. Budget and attention limits. Every accepted role has bounded tokens, time, forwarding, and retries. Irrelevant offers expire without model calls. Low-capacity workers may refuse or ask for scoped help.
+5. Safe default and owner authority. Missing contract evidence, stale keys, ambiguous roles, lost checkpoints, or unresolved safety notices block PLAY. Human-approved changes require a new signed event; stronger 9-Ball size grants no exception.
+
+The Covenant is versioned, tested on startup, and reported by the local gate (governance_version, governance_digest, governance_status). Implementations MUST publish conformance tests for STOP acknowledgment, replay prevention, independent evidence review, checkpoint restoration, and refusal to bypass holds. An independent implementation may use its own engine but must produce equivalent externally verifiable behavior.
+
+8.3 Memory, review, and privacy
+
+PAUSE, STOP, REVIEW, and REWIND preserve only the contract-required operational evidence. They do not create a permanent transcript archive of unrelated messages. The minimal recovery capsule in Section 0.4 preserves accepted obligations, verified progress, and the unresolved human decision without retaining a full conversation or private chain of thought. Lower capacity cannot reduce this requirement. Expired noise still undergoes TTL deletion; accepted work still follows retention agreements. Rewind is a new auditable event and compensating action, not deletion or rewriting of history. A human may request a plain-language explanation of why a local action was stopped or reviewed without being given private data from an unauthorized peer.
+
+8.4 Security and failure model
+
+OSAMP assumes that messages, attachments, agent output, and even messages from authenticated peers can be malicious or mistaken. An authenticated connection verifies a source identity, not the truth of its claims or the safety of embedded instructions. Model text never overrides a signed contract, execution lease, human hold, or sandbox policy.
+
+|Failure or attack                |Minimum required defense                                                            |
+|---------------------------------|------------------------------------------------------------------------------------|
+|Spoofed or replayed approval     |Signature or authenticated owner action; nonce, version, event ID, revocation lookup|
+|Prompt injection or tool abuse   |Treat content as data; sandbox/allowlist; confirm irreversible operations           |
+|Copied hallucination across peers|Provenance graph; independent evidence/test; REVIEW on conflict                     |
+|Offline participant misses STOP  |Expiring leases; check hold/revocations before resuming; show STOP_PENDING          |
+|Queue floods and spam            |Gate before inference; sender quotas, TTL, bounded storage and retry                |
+|False rollback claims            |Checkpoint integrity; compensating actions for external side effects                |
+|Compromised peer or signing key  |Revoke relationships, freeze affected Tables, rotate keys, inspect receipts         |
+
+Safety controls should fail closed for new execution. They must not silently delete existing accepted obligations or fabricate completion. Operators retain the right to disconnect locally and invoke a hold regardless of peer votes.
+
+8.5 Contract Zero enforcement placement
+
+The Gate MUST verify the applicable operator acknowledgment before enabling OSAMP work and reject attempts to override mandatory controls. The local supervisor enforces task-class limits, provenance-based review triggers, hold scope, and authenticated human resolution. The Postbox/ledger persists commitments and recovery capsules before acceptance acknowledgment and throughout holds. Execution adapters enforce the hold at model/tool dispatch, after restart, and at reconnect; changing a dashboard badge is insufficient.
+
+Hold entry, notification, and persistence must be possible without inference. Record a typed reason, scope, affected obligation, checkpoint/evidence references, human decision required, and uncertain actions. Implementations may use different internal record names, but must demonstrate equivalent observable behavior. A closed or reviewed event cannot be erased to manufacture a clean execution history.
+
+Governance status must identify whether the adopted profile includes Contract Zero and whether its required controls and acknowledgment are satisfied. Missing or incompatible profile evidence blocks the affected execution rather than assuming compatibility. Exact governance identifiers, digest contents, event schemas, limits, and lease/clock behavior require an adopted versioned profile and test vectors; this paper does not standardize them through a document-number change. Section 10 explains the wire boundary.
+
+9. The smallest deployable software
+
+OSAMP should be optional and nested into OpenClaw through an extension or sidecar rather than replacing the gateway. The same wire conventions should be implementable by other runtimes. The reference design contains four compact services, with the Self-Governance Covenant enforced inside the Gate and execution adapters:
+
+|Component|Job                                                                                                                                  |Suggested persistence                   |
+|---------|-------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------|
+|Clan Gate|Deterministic contracts, governance state transitions, authorization, deduplication, TTL, and offer budgets                          |Small SQLite ledger                     |
+|9-Ball   |Refresh local capacity and compute task suitability                                                                                  |Local JSON profile                      |
+|Postbox  |Store-and-forward envelopes, retry with IDs, preserve accepted commitments/recovery capsules, notify humans, schedule authorized work|SQLite queue + ordinary files           |
+|Keyring  |Owner-approved peers, contract digests, bridge receipts, rotation and revocation                                                     |Restricted signed files / OS key storage|
+
+A local Mailpit-style inbox is useful for visibility, but an SMTP catch-all is not a durable authenticated inter-company broker. The NoCloudGPT stage 11.4 implementation intentionally does not relay internet mail and has finite message retention. OSAMP therefore needs its own persistent, signed project envelopes and a transport adapter, rather than trusting email headers or permanent retention by the mail UI.
+
+A2A 1.0 can carry agent tasks when the runtime supports it, and email/VPN/HTTPS can transport OSAMP envelopes where appropriate. Transport is not trust. The official OpenClaw A2A plugin authenticates peers and supports SendMessage/GetTask, but currently refuses remote CancelTask; task retention is also bounded. OSAMP needs local hold enforcement and its own contract ledger for longer lived commitments. These features are proposals, not existing bundled OpenClaw behavior.
+
+Installer alignment: preserve the installed OpenClaw and AI Mail stages; develop the Clan Gate, adapters, and 9-Ball as letter-suffixed test candidates. Do not assign or repurpose canonical 36.sh/37.sh across release families until their current meanings and migrations have been reconciled.
+
+9.1 Architectural planes and local stores
+
+|Plane    |Local components                                                                       |Control boundary                               |
+|---------|---------------------------------------------------------------------------------------|-----------------------------------------------|
+|Agreement|Peer/Tribe/Clan/Table/Work signed documents, keyring, human bridge receipts            |Owner-authorized identities and data access    |
+|Attention|Deterministic Gate, 9-Ball current fit, spam TTL, idempotent offer ledger              |Zero model calls for ineligible invitations    |
+|Execution|OpenClaw adapter or another runtime; tool sandbox; checkpoint and lease supervisor     |PLAY/PAUSE/STOP/REWIND/REVIEW enforced locally |
+|Delivery |Postbox durable outbound/inbound queues, verified envelopes, HTTPS/A2A/email transports|Offline delivery does not imply task acceptance|
+|Evidence |Small SQLite index, signed receipts, content-addressed artifacts, retention policy     |Minimized storage; auditable decisions         |
+
+Every owner hosts an independent protocol gate and execution supervisor. No central OSAMP authority, shared worker account, or cloud registration is required. Mail is a store-and-forward abstraction: an implementation can transport signed envelopes through SMTP, private HTTPS, A2A, or another adapter, without trusting transport authentication alone.
+
+Proposed reference layout: agreement files and keyring are restricted to the owner; SQLite tracks event IDs, leases, and queue status; payloads live in content-addressed files under explicit retention classes. Local Mailpit may expose human-readable notifications but is not the authoritative signed task ledger.
+
+9.2 Deployment and version gates
+
+A pilot should use two separately administered runtimes and a dedicated collaboration identity on each side. Restrict inbound tool permissions, keep independent keys and workspaces, require authenticated owner approvals, and avoid public exposure of administrative interfaces. Verify the exact installed OpenClaw/A2A feature set before enabling any adapter; bundled channel capabilities vary by version.
+
+NoCloudGPT’s inspected Linux stage map uses stage 11 for OpenClaw, optional stage 11.4 for local AI Mail, and a reserved stage 8 for existing 8-Ball data. These are implementation notes, not OSAMP requirements. Candidate OSAMP modules must remain letter-suffixed test stages until independently validated; do not reuse stage 36 or 37 without reconciling existing installers and aliases.
+
+A2A task receipt is not OSAMP work acceptance. A remote STOP is not confirmed until the remote local supervisor acknowledges it. When a runtime lacks remote cancellation, the contract gate must enforce its own lease and resumption checks; arbitrary remote shell access is outside the protocol.
+
+9.3 Two linked workspaces: 🎭Mail and Glass Agents
+
+Associate 🎭Mail with the communication workspace: inbox/outbox, durable queue visibility, invitations, receipts, approved contacts, and contract joining. Associate 🎭 Glass Agents with the execution workspace: installed runtimes, individual workers, tasks, resources, and PLAY/PAUSE/STOP/REVIEW controls. A queued or delivered message must remain distinguishable from a running agent or an accepted task.
+
+Grid Home should provide a 🎭Mail entry and an application-style Glass Agent tile when a Glass Agent installation’s license is activated. Each entry can open its own GridStack dashboard. The workspaces should link to the same peer, agent, message, and contract identifiers so that a task can be followed from invitation through acceptance and execution. A dashboard is a view of those records; opening or rearranging it does not enroll an agent or start work.
+
+The existing 9-Ball Profile in this paper remains a measured capability/resource profile. 🎭Mail is the user-facing name for the communication interface previously called 9-Ball Mail in this addendum; its association with the 9-Ball communication workspace remains. This naming update changes neither installer stage numbers nor humanitarian installer or key acceptance rules. Exact packaging and routes require implementation reconciliation.
+
+9.4 Activation tiles and identities for many agents
+
+Verified activation of a Glass Agent installation should create or update its app tile. Repeating activation, refreshing Grid Home, or reconnecting must update the same tile instead of creating duplicates. Show installation/entitlement status separately from runtime availability: activation may succeed while runtime installation or setup is still pending.
+
+The app tile uses a NoCloudGPT mask in the yellow, green, or blue palette. This addendum does not infer a new mapping between those colors and product entitlements. Masks retain their assigned brand color during work, holds, timeouts, errors, and disconnection.
+
+The owner-selected generic symbol for Glass Agents is 🎭. The same brand symbol prefixes 🎭Mail; the app name and accompanying mail label distinguish that interface from the agent management app. Unicode 🎭 is a text fallback whose appearance depends on the platform. Custom branded mask artwork retains the assigned yellow/green/blue palette; operational status remains a separate badge.
+
+Individual workers and other agents may use distinct emoji or approved icons, names, and stable agent IDs. A customer with many agents can distinguish each worker without needing more mask colors. The licensed installation’s app tile can open a dashboard containing the workers allowed by that entitlement; this interface design does not impose one commercial key per worker or change purchased limits.
+
+License activation makes the app visible and available for setup. Joining a peer relationship, tribe, clan, Table, or project remains a separate authorized action. OSAMP participation by other conforming agents remains independent of purchasing a Glass Agent license, consistent with section 12.
+
+9.5 Status badges that preserve brand identity
+
+Place live badges in GridStack tile titles/headers, preserving embedded application contents. Keep an agent’s avatar, brand mask, relationship badges, and changing operational status as separate fields. Display a short text label with every symbol; color and emoji alone are insufficient to distinguish meaning.
+
+|Symbol|Display label          |Evidence or state represented                                                              |
+|------|-----------------------|-------------------------------------------------------------------------------------------|
+|`✓`   |Ready                  |Current runtime evidence shows the worker is available; this does not grant task authority.|
+|`%%`  |Working / Syncing      |Identify which task or sync operation is active.                                           |
+|`!!`  |Held / Paused / Stopped|Show the precise state and reason, including approval needed where applicable.             |
+|`!*`  |Timeout                |Show the protective hold and required next action.                                         |
+|`○`   |Offline / Unknown      |Distinguish an observed disconnect from missing or stale evidence; show last contact time. |
+|`!`   |Error                  |Show the failure and recovery action without changing the mask color.                      |
+|`~ ~` |External service / MCP |Connection-type marker, independent of execution and contract status.                      |
+
+The Ready, Offline/Unknown, and Error symbols are proposed presentation choices. The established %%, !!, and !* conventions retain their meanings. Remote stopping additionally shows STOP_PENDING until acknowledged; it must not be rendered as confirmed stopped just because the peer is offline.
+
+Track three independent status dimensions: runtime/work (for example, running or held), mail delivery (queued, delivered, expired), and contract/role (invited, awaiting acceptance, active, revoked). Show an actual work acceptance receipt separately from delivery. An unread count, mailbox connection, or healthy mail service cannot stand in for agent execution health.
+
+Contract Zero additionally requires a readable Needs human help view with hold scope, the precise unresolved question, authorized evidence, known/uncertain effects, and permitted decisions. A lower-capacity agent’s held obligation must remain visible after context loss or model termination. Show whether the human notice is merely queued versus acknowledged. Reading an available authorized recovery record does not resume execution.
+
+9.6 Contract symbols and connection information
+
+The following UI symbols record the owner’s selections on 16 November 2026. Display each with its text label. They supplement the five existing agreements; Project and Corridor remain the two kinds of Work Contract.
+
+|Badge            |Relationship or scope                             |Information opened by the badge                                      |
+|-----------------|--------------------------------------------------|---------------------------------------------------------------------|
+|🦞 Peer (OpenClaw)|Approved direct relationship with an OpenClaw peer|Peer identity, owner, permitted contact, contract version and status.|
+|🤝 Tribe          |Approved small working circle                     |Named circle, accepted membership, scope, and limits.                |
+|🛡️ Clan           |Approved broader federation                       |Named federation, permitted escalation, and bridge requirements.     |
+|🪑 Table          |Accepted collaboration role                       |Project/task, role, participants, and acceptance receipt.            |
+|📋 Project (Work) |Authorized outcome-based work                     |Deliverable, budget, deadlines, and holds.                           |
+|👥 Corridor (Work)|Authorized bounded route or escalation chain      |Approved stages and recipients, budget, deadlines, and holds.        |
+
+OpenClaw peers use the lobster identity; other runtimes may retain their own emoji or approved icons alongside the Peer label. The former draft Tribe icon, 👥, now identifies Corridor work. Runtime identity and relationship status remain separate fields, and existing yellow/green/blue masks and operational status badges retain their meanings.
+
+A peer may belong to more than one approved circle or Table. Each badge must identify the relevant named group/project; affiliation is not an exclusive rank or a grant of access to every other group. An invitation displays Pending until the required acceptance is recorded. A more capable worker receives no extra authority from its icon or capacity rating.
+
+Each Glass Agent tile should open a connection and contract panel with the agent name/ID, owner, runtime, authorized contact endpoint, public identity key/fingerprint, invitation import/export, relevant contract versions, and acceptance/revocation status. Exchange public identity information and scoped invitations for pairing. Private signing keys, commercial activation keys, API secrets, and unrelated credentials remain outside shared join information.
+
+The joining flow is: exchange an invitation, verify the peer identity, review the proposed scope, record authorized acceptance, then display the active relationship. Sharing a key or delivering mail is not acceptance. Tribe/Clan membership does not automatically accept a Table role or a Work Contract. Key suite and envelope serialization remain subject to the interoperability work in section 10; a new invitation format is not standardized by this addendum.
+
+9.6.1 Crown and supporting identifiers
+
+Additional presentation proposal, 16 November 2026: use 👑 Crown for a node’s authorized coordination role. A Crown can coordinate agreed Tables/Work across compatible computers and agents and arrange scoped assistance for lightweight nodes. Show the particular node and the scope of its accepted coordination role. Crown is an operational role alongside the agent/runtime identity and existing relationship badges. It confers neither automatic authority over peers nor access outside the applicable contracts, and it is not a sixth negotiated agreement. No fixed 1–9 capacity threshold is introduced by the Crown icon.
+
+|Proposed badge|Meaning                                      |Record it opens                                                                         |
+|--------------|---------------------------------------------|----------------------------------------------------------------------------------------|
+|👑 Crown       |Authorized coordination role                 |Node/agent identity, named project or group, accepted scope, and current availability.  |
+|📬 Mail        |OSAMP communication workspace                |Inbox/outbox, queue state, invitations, and delivery/acceptance receipts.               |
+|👤 Human       |Named owner, operator, or accepted human role|Identity and the particular approval or responsibility granted.                         |
+|🌉 Bridge      |Scoped, human-approved boundary crossing     |Bridge Acceptance receipt, affected contracts, data scope, expiry, and revocation.      |
+|🔑 Identity    |Public peer identity and pairing information |Public key/fingerprint and rotation/revocation status; never private or commercial keys.|
+
+These supporting symbols remain proposals for owner review. A bridge badge refers to the existing Bridge Acceptance amendment/receipt; it does not add a standing contract. Lightweight endpoints retain their chosen agent emoji/name and measured capacity profile rather than acquiring an invented rank or compulsory icon.
+
+Every display label and emoji must resolve to a stable record identifier. Individual agents require distinct IDs even when they share a name, runtime icon, mask color, or Crown role. Contract digests, table_id, role_id, event IDs, and key IDs keep their existing protocol meanings. Crown assignments should reference the existing node/agent record and its scoped authorization instead of using an emoji or display name as an identity. Exact new UI record-ID formats remain implementation work; this presentation proposal does not change the wire schema or prescribe a global registry.
+
+9.7 Evidence required before claiming the panel is implemented
+
+A pilot must demonstrate that repeated activation creates one installation tile; many workers retain distinct identities within actual entitlement limits; masks stay yellow/green/blue through all statuses; Grid Home and detailed dashboards agree on the same records; queued/delivered mail never appears as accepted or executing work; expired or revoked relationships lose their active badge; and offline STOP remains pending until acknowledged. Joining must require the applicable scoped acceptance and must not expose private or commercial keys. Preserve accepted commitments through restart and reconnection under the existing retention policy.
+
+9.8 Protocol icons and native integration identities
+
+Add a protocol badge beside the connection it describes. Keep runtime/agent identity, Crown role, relationship membership, protocol/transport, and operational status separate. Show the active connection’s protocol in the compact tile; put its full protocol and transport details in the connection panel. Avoid displaying every possible badge on every agent.
+
+The following are proposed OSAMP display fallbacks, not claims that an upstream protocol adopted these emoji:
+
+|Fallback|Exact label|Meaning and layer                                                                                       |
+|--------|-----------|--------------------------------------------------------------------------------------------------------|
+|📨       |OSAMP      |Signed collaboration envelopes, agreements, receipts, and durable work semantics.                       |
+|↔️       |A2A        |Agent2Agent task/message interoperability through a configured adapter.                                 |
+|🧩       |MCP        |Model Context Protocol tools/apps; preserve the existing `~ ~` external-service marker where applicable.|
+|🖥️       |ACP        |Agent Client Protocol connection to an editor or agent harness.                                         |
+|📤       |SMTP       |Outbound email submission/delivery transport.                                                           |
+|📥       |IMAP       |Retrieval and organization of messages from a configured mailbox.                                       |
+|🌐       |HTTPS      |HTTP over TLS transport; show the higher-level protocol separately.                                     |
+
+For example, a connection can be OSAMP over A2A/HTTPS or OSAMP over email. An ordinary email or A2A message is not automatically a valid OSAMP envelope. Tailscale identifies a network route; it is not an additional Work Contract or proof of OSAMP acceptance. Preserve named channel/provider identity separately from the protocol it uses.
+
+Reuse supported native integration metadata and approved upstream icon assets where available, with a text label and an offline fallback. OpenClaw’s inspected skills declare 📧 Himalaya and 🎮 gog in metadata.openclaw.emoji. Its inspected MCP app icon component can render an advertised/plugin icon and falls back to a puzzle icon. Preserve these native choices for those integrations; do not relabel 🎮 as an official Gmail protocol logo or assume every protocol has a standard emoji. Keep source/version and icon provenance in implementation records.
+
+Adding a badge must not imply that its adapter is installed, configured, authenticated, enabled, or healthy. Track those states independently and show only capabilities verified for the particular deployment. This legend adds no wire event, trust grant, or automatic tool activation.
+
+9.9 Mail capability audit and the 🎭Mail app
+
+Evidence reviewed 16 November 2026: OpenClaw already provides email integration paths. The inspected upstream skills/himalaya/SKILL.md describes a CLI client for IMAP/SMTP mail, including reading, composing, replying, and organizing messages, and requires the himalaya executable. skills/gog/SKILL.md includes Gmail through the Google Workspace CLI and requires gog plus account authorization. Current OpenClaw webhook documentation describes Gmail watch/Pub/Sub transport through gog. Current OpenClaw documentation also describes MCP, A2A, and ACP interoperability. These are available upstream capabilities; their presence and configuration on the user’s hosts have not been verified by this document update.
+
+The existing NoCloudGPT Linux installer already contains AI Mail, optional stage 11.4, with a Mailpit web inbox at /apps/mail/ and an API. The inspected 1.0.26-LINUX-GA-Openclaw/docs/MAIL.md links it as ✉️ AI Mail, retains the newest 5,000 messages, and configures no outbound internet relay. It can collect local/private-network notifications. Preserve that existing entry and installation; a new icon must not install another mailbox automatically.
+
+The inspected AI Mail stage exposes SMTP and a web/API inbox, with its optional POP3 access disabled. Do not assume the Himalaya IMAP reader can read this Mailpit inbox directly; verify actual backend interfaces. A Mailpit API adapter can expose the existing notification inbox while a separate Postbox ledger preserves OSAMP commitments under their contract-defined retention rules. Mailpit’s rolling notification retention must not erase accepted work authority or its required receipts.
+
+The sources inspected establish mail tools and an existing notification inbox, but do not establish a deployed OSAMP contract-aware mail application. 🎭Mail should therefore be the unified communication app/view for OpenClaw and other supported runtimes, reusing installed mail components and exposing the OSAMP Postbox, Gate, and Keyring through bounded adapters. It should provide:
+
+• Inbox/outbox, drafts, queued deliveries/retries, and authorized account selection, with ordinary messages visibly separate from OSAMP work envelopes.
+• Peer, Tribe, Clan, Table, Project, and Corridor invitations; explicit review/accept/decline actions; and scoped public identity/pairing information.
+• Separate delivery receipts, work/role acceptance receipts, and runtime/task status, including pending remote stops and offline catch-up.
+• Agent/runtime identities, Crown roles, protocol/provider badges, and links to the corresponding Glass Agent task or management panel.
+• Existing local notifications through the Mailpit interface/API where available; external mailbox access through an explicitly configured, tested Himalaya, gog, or other supported adapter.
+
+Implementation should first detect the existing AI Mail route, exact runtime/skill versions, configured adapters, and authorized accounts. Reuse functioning components; add the missing OSAMP application view and adapters where needed. Keep optional Gmail/external mail independent of the basic local workflow. No existing account is linked, no message is sent, and no work is accepted merely because the app tile appears. An inbound mail trigger must pass the deterministic OSAMP gate before it can invoke inference or tools for OSAMP work.
+
+This update defines the app and adapter requirements; it does not install or configure mail on a host. Existing installer numbering remains unchanged. Verify two-way delivery, duplicate/retry handling, restart durability, account isolation, role acceptance, and offline behavior before calling the mail app operational.
+
+9.9.1 A familiar mail interface with an isolated Himalaya foundation
+
+Owner direction, 16 November 2026: present 🎭Mail as the user-facing mail app. It should offer recognizable Inbox, Sent, Drafts, Outbox, Search, Compose, Reply, and Contacts actions, with an Invitations/Contracts view for OSAMP. Users work through buttons, forms, and readable receipts rather than needing to operate a mail CLI. Show the intended recipients/account before sending and identify ordinary correspondence versus a scoped OSAMP offer or acceptance.
+
+Use 📧 Himalaya for the underlying mail integration, preserving OpenClaw’s existing skill icon. A separate, version-pinned Himalaya development copy is the chosen starting point for the mail foundation; keep 🎭Mail’s interface and OSAMP behavior in its own app/adapter namespace. The upstream Himalaya CLI supplies mail operations and machine-readable output; the graphical 🎭Mail interface and OSAMP contract handling still require implementation.
+
+An isolated source checkout was prepared on 16 November 2026 from pimalaya/himalaya at commit b9712f7f712e3263bd34a1204002d5f2e60dc8d5, on local development branch osamp/mail-interface-20261116. The source clone is unmodified and has not been built or installed. It is a development baseline, not a selected production release. Preserve upstream source/license notices when packaging derived work.
+
+Install the eventual app-specific executable/dependencies separately. Each invocation must explicitly select 🎭Mail’s own configuration/account scope, data/cache paths, credential references, and service identity. Himalaya’s inspected README supports explicit -c <PATH> configuration selection; use that mechanism only after verifying the pinned binary’s actual behavior. This isolation is required because upstream CLI versions can differ from commands expected by an existing OpenClaw skill. Keep OpenClaw’s current executable, skill files, settings, authorized accounts, and services intact. Existing AI Mail notifications may be linked through a separately configured API adapter; a source clone alone does not connect accounts or migrate mail.
+
+Use the title form 📧 🎭Mail | <status>, with the 📧 🎭Mail identity kept visible and changing badges in the GridStack header. The 📧 integration icon and 🎭 app identity are presentation labels; their presence alone is not a capability or connection-health check.
+
+|Header                |Meaning                                                                    |
+|----------------------|---------------------------------------------------------------------------|
+|`📧 🎭Mail | ✓ Ready`   |The configured mail service is ready.                                      |
+|`📧 🎭Mail | %% Sending`|An identified outbound operation is active.                                |
+|`📧 🎭Mail | %% Syncing`|A mailbox or queue sync is active.                                         |
+|`📧 🎭Mail | !! Held`   |Mail processing is paused or awaiting a named approval.                    |
+|`📧 🎭Mail | !* Timeout`|A timeout has placed the affected operation on hold.                       |
+|`📧 🎭Mail | ○ Offline` |The relevant mail connection is unavailable; preserve truthful queue state.|
+
+The compact 📧 🎭Mail | !! is valid when the visible label or accessible description explains the hold. Its scope is this mail app/operation; show agent work and remote STOP_PENDING independently. A person can still open and read available local mail during a sending hold. Changing a header never alters a contract or silently resumes a queue.
+
+9.9.2 Offline forwarding and private-message badges
+
+Owner direction, 16 November 2026: keep 📧 🎭Mail visible as the app identity; !! appears only while the applicable operation is held. Add the following display badges with short text labels or accessible descriptions:
+
+|Badge|Display meaning                                             |Definition status                                                                                                                |
+|-----|------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+|`○`  |Offline                                                     |Existing status convention.                                                                                                      |
+|`○o` |Offline; message waiting to forward                         |Owner-selected; the final character is lowercase letter `o`.                                                                     |
+|`○-` |Contract 8                                                  |Owner-selected service/category marker; the exact Contract 8 routing scope is not defined by this symbol.                        |
+|`○!!`|Offline and held                                            |Provisional interpretation that preserves the established `!!` hold meaning; the owner has not separately defined this composite.|
+|`○!@`|Private message for a doctor or authorized medical recipient|Owner-selected message-category marker.                                                                                          |
+
+Interpret these as complete presentation tokens, not a punctuation-based routing language. In particular, the category markers ○- and ○!@ do not themselves assert that a connection is offline. Delivery state, service/category, privacy/authorized-recipient scope, and work holds remain separate records. For example, 📧 🎭Mail | ○!@ · ○o describes a private doctor-directed message waiting to forward while offline; 📧 🎭Mail | ○- · ○o describes Contract 8 traffic waiting offline. Use a readable separator between badges.
+
+The numbered Contract 8 service/category label remains separate from this paper’s five negotiated relationship/work agreement types. This update assigns its display symbol without inventing routing eligibility, disclosure rights, or a new standing agreement.
+
+The offline queue must preserve the message and its relevant receipts under the accepted retention policy. A waiting-to-forward marker means queued, not sent, delivered, accepted, or completed. On reconnect, the gate must recheck current permissions, applicable contracts, expiry, and holds before any forwarding. A held queue remains held until the required authorization permits resumption.
+
+The private-medical marker identifies a directed, authorized conversation. Private doctor/clinic messages must stay separate from public news, essential-news publication, and press/journalism routes. A visible icon grants no access or forwarding permission. Show message contents only within the recipient/access scope authorized for that conversation; keep shared dashboard headers to minimal status/category information.
+
+9.9.3 Human-first messages, contract/rank subjects, and one divider
+
+Owner direction, 16 November 2026: every OSAMP message presented in 🎭Mail begins with clear, human-friendly prose. State what happened, what the recipient needs to know, and what response or action is requested. Use ordinary paragraphs and familiar names. Place technical details after exactly one standalone line containing 19 equals signs:
+
+===================
+
+That exact line is the sole human/technical section divider. It has no leading/trailing text, spaces, or decorative additions. Do not add a second separator, an ornamental header rule, or a large metadata preamble above the readable message. Ordinary paragraph spacing remains available. Render the divider literally in both plain-text and HTML views. Display reply history as separate thread messages instead of concatenating earlier dividers into the newly authored body.
+
+The subject format is {contract_number} [rank] Clear human summary. Curly braces identify the applicable numbered contract/service category; square brackets identify the sender’s current 1–9 rank from the existing measured 9-Ball profile. These two values are distinct. Rank describes observed capability, not authority, clinical qualifications, urgency, or permission to read the message. The subject’s contract number uses the message’s numbered service/category assignment, separately from Peer/Tribe/Clan/Table/Work agreement types.
+
+Illustrative message:
+
+Subject: {7} [3] Document ready for review
+
+Hello,
+
+The document is ready for your review. Please let me know whether you can take this task and whether you need any additional information.
+
+===================
+Contract: 7
+Sender rank: 3
+Sender: Agent-07
+Message ID: example-001
+Status: Awaiting acceptance
+
+The example numbers and identity are illustrative, not a real message or a new definition of Contract 7. Real messages use verified records. Below the divider, keep technical references concise: relevant contract/role references, sender identity/rank evidence, message/event ID, delivery/acceptance state, and permitted provenance or artifact references. The technical block must not expose private keys or unrelated account details. A signed envelope/attachment may carry the machine-readable protocol record; this display template does not define a new canonical serialization or signature format.
+
+Generate subject tags from the applicable message records, and check that the displayed contract and rank match those records. On a reply, use the current sender’s rank and the applicable contract, rather than copying a prior author’s rank. Forwarding still requires the existing authorization and scope checks. Missing or unverified values appear as explicitly unknown in drafts or imported-message views; never manufacture a numeric rank or contract. Preserve an imported original subject as evidence and show any normalized display tags separately.
+
+Use a short, nonsensitive subject summary for private doctor/clinic conversations, with their content confined to the authorized message view. App identity and operational badges remain in the header, for example 📧 🎭Mail | ○!@ · ○o; a subject such as {7} [3] Private message awaiting review identifies the message’s contract and sender rank. Subject punctuation, a divider, or a readable request never substitutes for the Gate’s contract and acceptance checks.
+
+Capability and icon sources:
+
+• OpenClaw Himalaya skill, inspected blob eb3cf9b503770c79f52b207928b12f9de9247de9.
+• OpenClaw gog skill, inspected blob 49b445a53acd36f40e0ba57e00bee6e74c19d1a9.
+• OpenClaw MCP app icon component, inspected blob a1b932af6c8edfb1a6bb3f7bdcdc98d5c5e71b92.
+• OpenClaw open standards, webhooks CLI, and Gmail PubSub triggers, reviewed 16 November 2026.
+• NoCloudGPT AI Mail stage documentation, inspected blob 2ac4c79abdc932ca69c9d1c5b75012c02692f3f6.
+
+9.10 Internet cafes and the proposed AfricaTogether Clouds program
+
+Owner direction, 16 November 2026: extend the cafe plan previously made for Frederic, using its human explanation and picture as the base. That recipient-specific original has not yet been positively identified. The general NoCloudGPT_Internet_Cafe_and_AI_Service_Business_Plan.docx dated 31 October 2026 is a related Cameroon/Kenya pilot plan, not a confirmed identification of Frederic’s document. Preserve the new requirements here without presenting a replacement as the recovered original.
+
+The proposed program helps locally operated internet cafes become Independent AI service businesses. Expatriates and other eligible supporters can buy COLORS licenses and help named cafes obtain authorized Yellow keys. Owners may contribute additional keys their entitlement permits; any further issued keys and Green-market-equivalent pricing must be recorded in the published program terms. A contribution assigns an authorized key to its recipient rather than sharing the supporter’s account credentials. Exact key quantities, local tariffs, and credits remain to be specified.
+
+|Color or status|Proposed program role                          |Customer or operator path                                                                                                                                             |
+|---------------|-----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|Yellow         |Supported license/customer/data path           |Eligible non-African supporters help a named cafe obtain authorized keys; the cafe provides the permitted local service.                                              |
+|Green          |Local commercial license/customer path         |Local businesses buy under the published market tariff and may separately purchase storage or managed services.                                                       |
+|Blue           |Approved cafe/cloud operator access and status |A cafe joins the application list, undergoes service and operations review, and receives the agreed Blue access before offering approved AT Cloud services.           |
+|Teal           |Assessed hosting-country status for Yellow data|A reviewed hosting location may receive specifically authorized Yellow data after the customer chooses the location with its jurisdiction and service risks disclosed.|
+
+These colors describe commercial/program and hosting roles. They do not replace OSAMP’s five negotiated agreement types, change the measured 1–9 rank shown in mail subjects, or make a paid license a prerequisite for vendor-neutral OSAMP participation. Teal is a hosting status, not a fourth Glass Agent mask color. Existing yellow/green/blue mask branding remains available alongside clearly labeled hosting badges.
+
+9.10.1 From cafe service to an AT Cloud operator
+
+A participating cafe starts with recognizable customer services: shared computer/phone access, local AI assistance, documents, learning, and permitted business tasks. It may apply to the Blue access list as its staff, facilities, customer service, and demand develop. Approved Blue cafes become AT Clouds, meaning AfricaTogether Clouds, and may offer the storage/VM services actually approved for that site.
+
+The program includes supervision and customer-service oversight: named accountable staff, clear local prices and receipts, support and complaint routes, defined response responsibilities, and periodic operating reviews. Oversight should use the service evidence needed for that purpose, without granting routine access to private customer files or medical conversations.
+
+Blue operator approval requires practical controls appropriate to the hosted service: separate public cafe and administrative/customer workloads, tenant isolation, controlled staff access, MFA where supported, protected storage/transport, patching, physical equipment protection, and tested backup/restore procedures. A Blue key or badge alone is not evidence these controls exist.
+
+UPS support is part of the proposed infrastructure growth path for continuously running VMs. Size backup power for the actual server, storage, network, and required cooling load; measure runtime and test safe shutdown/recovery. Define availability, support, backup, and recovery commitments from measured capacity. Record quoted equipment and support funding rather than assuming that every approved cafe already has funded equipment or guaranteed uptime.
+
+9.10.2 Offline AI and resilient connectivity
+
+The announcement should describe Independent AI data centers built around local businesses. Local models, authorized datasets, tools, and storage can support eligible local work during internet outages when installed, licensed for that workflow, and supplied with power. Remote models, external websites, cross-site access, mail forwarding, and remote storage synchronization depend on available connections. The offline demonstration must show which useful tasks continue and which remain queued.
+
+As Blue companies grow, add dual or triple internet services when viable: for example, a primary terrestrial link, an independent mobile/second-provider link, and satellite where locally available and permitted. Starlink is a conditional option checked by country and exact service address, not a continent-wide launch assumption. Measure failover and shared upstream/power dependencies; multiple subscriptions alone do not demonstrate independent failure paths.
+
+9.10.3 AT Regions and AT Zones
+
+Use the AWS region/availability-zone idea as a planning analogy, with AfricaTogether-specific names and measured service limits. An AT Region identifies a declared geographic/data-governance boundary. An AT Zone identifies a separate approved physical operating site and its observed power/network failure dependencies. Several VM instances in one cafe are not separate physical zones. Cross-zone replication occurs only where the data’s country, contract, and recipient permissions allow it.
+
+Country governance, market/license eligibility, physical fault isolation, operator approval, and agent rank remain separate attributes. Do not imply AWS affiliation, AWS-equivalent durability, or a service-level guarantee from these labels.
+
+9.10.4 Teal hosting and the customer’s country-risk choice
+
+Teal records an assessment of the proposed hosting country’s safety and government neutrality for the particular service/data class. Treat it as a dated, reviewable hosting assessment, not an absolute guarantee about a government or its future actions. No specific country is approved as Teal by this addendum.
+
+Before Yellow data is placed there, show the customer the hosting country, operating company, primary/backup locations, relevant access/jurisdiction conditions, and the consequences of keeping services in that country. The customer explicitly chooses whether to accept the stated hosting and service-continuity risk. Explain how they can retain an allowed independent copy, export data, or leave the service. A change to the approved country or a material hosting risk requires the applicable review and customer authorization; do not silently relocate the data.
+
+Risk acknowledgement records the customer’s informed hosting choice. It does not itself establish that every transfer is lawful, waive the operator’s obligations, or replace the required country/data/contract review. Yellow program origin is not a medical-data sensitivity classification; assess the actual information and authorized recipients separately. Private doctor/clinic messages remain outside public news/press routes.
+
+9.10.5 Optional managed storage and South Africa
+
+Green-license customers may purchase approved local or remote storage services from AT Cloud operators. Software entitlement and optional recurring storage, backup, connectivity, power, and management charges must be clearly separated. Publish any small management fee alongside actual capacity, transfer, recovery, and support charges; no amount or billing commitment is set here.
+
+A future South Africa offering may use Amazon S3 in Africa Cape Town (af-south-1) or a separately evaluated S3-compatible service; name the actual provider and compatibility. South African storage is a foreign-country placement for customers in other countries. Use a country-specific placement/transfer profile covering primary objects, replicas, backups, logs, administrative access, retention, deletion, and onward transfers. Do not present one South African location as automatically satisfying every customer’s home-country governance requirements.
+
+AWS documents the Cape Town S3 endpoint and regional object placement; South Africa’s POPIA section 72 separately regulates transfers of covered personal information out of South Africa. Neither fact establishes permission to export data from another country into South Africa. Proposed pilot/operator terms and implementation should be reviewed against the actual sending country’s rules and the agreed customer service.
+
+Implementation status and next dependency: these are owner-directed program requirements, not an announcement of operating AT Regions, funded UPS grants, a live Blue directory, or completed storage services. Recover Frederic’s original plan/picture, then revise those materials and the announcement around this program, preserving their identity and historical assumptions.
+
+Reference checks, 16 November 2026: Amazon S3 regional endpoints; Amazon S3 regional object placement; Starlink availability map and location/plan capacity guidance; POPIA section 72; FTC small-business cybersecurity guidance.
+
+9.11 Glass Agents and 🎭Mail: external engineering implementation boundary (v0.81)
+
+For an implementer reading this paper for the first time, Glass Agents and 🎭Mail are two views of shared, permission-scoped records, not a claim that an agent networking product is already functioning:
+
+|Area                                |Proposed responsibility                                                                                          |Evidence required before “working”                                                                                                |
+|------------------------------------|-----------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+|**🎭Mail communication workspace**   |Human-readable Inbox, Sent, Drafts, Outbox, invitations and contracts; local Postbox queue and delivery receipts.|An authorized account/adapter, persistent queue, tested send/receive, retries, deduplication and restart recovery.                |
+|**Glass Agents execution workspace**|Named workers, active tasks, capability profiles, resource use and PLAY/PAUSE/STOP/REVIEW controls.              |Demonstrated runtime integration, authorized role acceptance, actual supervisor state and successful control/acknowledgment tests.|
+|**GridStack / Grid Home**           |Open the correct mail or worker panel with stable installation and agent identities.                             |Repeatable installation/activation, no duplicate tiles, working routes and truthful capability badges.                            |
+|**OSAMP deterministic gate**        |Validate sender, signatures, contract scope, expiry, replay, budget and data class before model/tool access.     |Automated tests showing invalid or unaccepted traffic causes zero agent inference/tool execution.                                 |
+
+Contract Zero acknowledgment and accepted-work recovery are additional shared records: the communication view tracks the human help notice; the execution view tracks the enforced dormant work state.
+
+A mail delivery receipt is not a human acceptance receipt; an accepted contract is not proof that an agent process is running; and a successful license activation is not evidence of a functional relay. Keep the three state machines separate: delivery, authority/role, and execution.
+
+An existing OpenClaw skill, local Mailpit instance, or Himalaya development clone may be useful as a foundation, but none by itself implements OSAMP. Preserve existing installer and stage identities, authorized app accounts, and local secrets. In particular, do not repurpose stages 36 or 37 simply because their numbers appear convenient; verify active definitions, aliases and upgrades first. All production claims require host-specific read-back and independent tests.
+
+9.12 Proposed Cameroon–Lagos–optional international pilot (v0.81)
+
+The intended first engineering demonstration is an end-to-end application-layer message, not the construction of a chain of physical internet links:
+
+1. Cameroon endpoint. A consenting, independently operated Linux or small-device installation prepares a harmless test request. A human authorizes the Peer and relevant Work contract. Local policy checks, a proposed signed envelope, and a persistent outbound queue are exercised before any remote transfer.
+2. Lagos endpoint. A separately administered Nigerian site receives the envelope through a permitted ordinary internet transport, verifies signatures/contracts/expiry/replay, records a scoped durable receipt, and does not invoke a model solely to inspect unauthorized or duplicate traffic.
+3. Optional Madrid or United States endpoint. Only if approved by all applicable contracts, the Lagos peer forwards the authorized envelope to a separately controlled endpoint in Madrid or the United States; this is optional federation testing, not mandatory cloud dependence.
+4. Return path and interruption. The sender receives accurate queued/delivered/accepted/completed distinctions. Tests include offline periods, duplicate retries, revocation while disconnected, expiry, and STOP_PENDING until a real supervisor acknowledgment arrives.
+5. Exit or refusal. Each participating owner can decline, revoke, export permitted records and stop; no site must continue serving as unpaid infrastructure.
+
+Connectivity principle: available national, cross-border, mobile, terrestrial, satellite, or cloud connectivity can carry OSAMP envelopes. Internet cafes and local businesses would be voluntary access/hosting partners, not required hops between Cameroon and Lagos. Packet paths may traverse other countries despite region-labeled application endpoints. Measure real routes and availability rather than assert a geographically direct backbone.
+
+Proposed hosting priority: Explore Lagos as a West African relay location because of the Cameroon/Ghana/Nigeria community strategy, but compare local-site hosting with ordinary virtual private servers and regional cloud options on actual reliability and cost. Madrid and Cape Town are optional infrastructure candidates; the United States may be an alternative onward endpoint. A Lagos AWS Local Zone, if used and verified, inherits dependencies on its parent region and is not independently a full AWS region. No cloud purchase or service-level guarantee is authorized by this document.
+
+Minimum pilot evidence: consented operator list; hardware/network inventory; exact software versions; public identity fingerprints; threat model; test fixture with non-sensitive messages; proof of persistence and replay protection; logs distinguishing model-free denials from inference calls; actual measured latency, data transfer, cost and failure recovery; and an independently witnessed result. Prefer one Cameroon–Lagos pair before a three-continent demonstration.
+
+Safety and jurisdiction: do not use real patient, child, refugee, or humanitarian case data in the first pilot. Emergency assistance must not depend on an unacknowledged queue; provide an alternate human/telephone/radio path. Cross-border transfers require scoped data authorization and jurisdiction review for each deployment; encryption alone is not permission to transfer personal information.
+
+9.13 Optional peer endorsements and non-transitive trust (v0.81)
+
+Existing Peer Contracts and Bridge Acceptance remain the authority boundary. A third party may offer signed evidence of identity or operational reputation (for example, a time-limited statement that an engineer verified control of a particular public key), but an endorsement does not activate a contract, grant system access, or permit forwarding. Trust is not transitive: a peer trusted by A cannot silently authorize B for A.
+
+A lightweight initial pilot can exchange pinned public-key fingerprints and independently verified operator contact information. W3C Verifiable Credentials 2.0 is a candidate interchange format for portable endorsements; OpenID Federation is an optional, later organizational federation mechanism. Neither is a required OSAMP dependency in v0.81, and neither substitutes for fresh proof-of-possession, revocation checks, local approvals, or legal agreements. No blockchain, centralized directory or universal key issuer is assumed.
+
+Design review should test compromised introducers, key rotation and loss, cloned mailboxes, misleading issuer names, stale claims, revocation during disconnection, and threats against small operators. Signed assertions are only evidence; a receiving owner decides whether to establish a specific relationship.
+
+9.14 AfricaTogether accessibility, neutrality, and local ownership (v0.81)
+
+The initial pilot should be inclusive of people using English, French, Arabic, and locally validated languages relevant to the participating community, including possible future work in Fulfulde, Hausa and Kanuri. Language availability is a tested user-interface and translation capability, not a claim that all those languages are presently implemented or spoken everywhere in Cameroon or Nigeria. Any health-related translations require qualified human review before reliance.
+
+The program is open to participants without religious screening or mandatory purchase of a commercial NoCloudGPT license. Cameroon, Ghana and Nigeria are proposed first-partner countries, not exclusive boundaries. Technical roles may include local developers, internet cafes, schools, technicians, service operators and qualified nonprofits, but no specific business has accepted a role by being named in a plan. Field recruitment must respect local safety, consent, labor conditions and realistic compensation.
+
+An AfricaTogether site may eventually become an approved AT Cloud under the requirements in Section 9.10; a successful OSAMP relay test does not confer Blue operator status or Teal hosting approval. Communicate any jurisdiction, storage or operator risk to participants before processing data. Local operators may keep their own machines and independently refuse federation work.
+
+9.15 Initial Cameroon engineering review invitation (v0.81)
+
+This revision is intended as a concrete starting document for an independent Cameroon-based software engineer and other prospective collaborators. It is a technical-review invitation, not an employment agreement, partnership representation, access grant, or code assignment. No individual or company is named as having endorsed OSAMP.
+
+Suggested first review deliverable:
+
+1. A two-page architecture critique identifying ambiguous protocol boundaries, unproven assumptions and risks, particularly for Glass Agents versus 🎭Mail.
+2. A minimum viable deployment diagram showing two separately administered endpoints (Cameroon and Lagos), queue persistence, inbound policy gate, signed receipts, and clear human acceptance points.
+3. A test plan for no-token rejection, replay/idempotency, queue recovery, peer revocation and STOP_PENDING, referencing the 21 baseline conformance checks and eight Contract Zero checks in Section 11.
+4. A Cameroon feasibility note on connectivity, power, hardware, language support and voluntary local partner recruitment, without exposing anyone’s private contacts or location without permission.
+5. A scoped cost/effort estimate with prerequisites, potential alternatives and an explicit list of items intentionally excluded from the first demonstration.
+
+Before commissioning implementation, agree separately on scope, compensation, intellectual-property/licensing terms, confidentiality, security access and publication rights. Source repositories, installed versions, code dependencies and claims about third-party interoperability should be reviewed against the live state at the time of engagement.
+
+10. Suggested wire conventions (discussion draft)
+
+A conforming envelope should carry protocol_version, governance_version, governance_digest, event_id, event_type, sender_key_id, recipient_key_id, peer_contract_digest, work_contract_digest, work_kind (project or corridor), references to relevant tribe_contract_digest, clan_contract_digest, and table_contract_digest when applicable, and table_id and role_id for accepted roles, sent_at, expires_at, hop_count, max_hops, max_offers, data_class, payload_digest, and a cryptographic signature. Actual canonical serialization and signature suites remain to be standardized; test vectors are required before claiming interoperability.
+
+Proposed event types are: WORK_PAUSE, WORK_STOP, WORK_REVIEW, REWIND_REQUEST, REWIND_APPROVAL, RESUME_APPROVAL, PEER_INVITE, PEER_ACCEPT, WORK_OFFER, WORK_ACCEPT, TABLE_ROLE_OFFER, TABLE_ROLE_ACCEPT, TABLE_ROLE_HOLD, TABLE_ROLE_HANDOFF, TABLE_ROLE_COMPLETE, CORRIDOR_STAGE_OFFER, CORRIDOR_STAGE_ACCEPT, CORRIDOR_STAGE_COMPLETE, CORRIDOR_STAGE_HOLD, HELP_REQUEST, HUMAN_REVIEW_REQUEST, HUMAN_SATISFIED_ACK, HOLD_NOTICE, HOLD_ACK, RESUME_REQUEST, RESULT, COMPLETE_ACK, REVOKE, and CATCH_UP. Unknown event types fail closed. Messages are content-addressed and idempotent by scoped event ID; retrying a delivery must never duplicate accepted work.
+
+An agent must never treat free-form body text, an email subject, a forwarded prompt, or a bare A2A ROLE_USER value as authority to spend money, run privileged tools, alter contracts, or override a hold. The on-wire event is signed metadata plus explicitly authorized content; the body is untrusted task data.
+
+Minimal example (illustrative, not yet a standardized signed format)
+
+{
+  "protocol_version": "osamp/0.8-draft",
+  "governance_version": "covenant/0.1",
+  "governance_digest": "sha256:...",
+  "event_type": "CORRIDOR_STAGE_OFFER",
+  "event_id": "offer-7f2c",
+  "sender_key_id": "peer-a-key-1",
+  "recipient_key_id": "peer-b-key-3",
+  "peer_contract_digest": "sha256:...",
+  "work_contract_digest": "sha256:...",
+  "work_kind": "corridor",
+  "tribe_contract_digest": "sha256:...",
+  "clan_contract_digest": "sha256:...",
+  "table_contract_digest": "sha256:...",
+  "corridor_id": "incident-23",
+  "corridor_stage_id": "review-02",
+  "table_id": "table-review-01",
+  "role_id": "evidence-check",
+  "task_class": "incident-analysis",
+  "data_class": "metadata-only",
+  "priority": 2,
+  "sent_at": "2026-11-07T08:00:00Z",
+  "expires_at": "2026-11-07T14:00:00Z",
+  "hop_count": 0,
+  "max_hops": 2,
+  "max_offers": 3,
+  "estimated_tokens": 1500,
+  "next_stage_id": "human-approval-03",
+  "execution_state": "offered",
+  "payload_digest": "sha256:...",
+  "signature": "<sign canonical envelope with agreed suite>"
+}
+
+The receiving agent may reply NO_ACTION locally without transmitting anything. It may ask for a CATCH_UP only after its accepted role and the sender’s disclosure permissions are verified. A catch-up contains a bounded summary, references to evidence, uncertainties, provenance, assigned subtask, and contract version rather than a transcript dump.
+
+10.1 Contract Zero and profile compatibility
+
+Contract Zero does not add a work_kind, negotiated agreement enum, or numbered message-service value. Its operator acknowledgment is a scoped local approval record bound to the adopted governance/profile version and digest. Do not send private acknowledgment details to every peer or treat a service subject {0} as a new wire definition.
+
+Existing proposed events such as WORK_REVIEW, HOLD_NOTICE, HOLD_ACK, HUMAN_REVIEW_REQUEST, RESUME_REQUEST, and RESUME_APPROVAL can express the relevant actions when an adopted schema binds them to the actual authority, role, hold, and contract version. A deployment must define the necessary acknowledgment reference, hold reason/scope, recovery-artifact references, human decision, and ordering rules in a versioned profile with signed test vectors. Do not silently add mandatory fields to an older peer’s schema. Unknown or incompatible required governance semantics fail closed for affected work.
+
+The illustrative osamp/0.8-draft and covenant/0.1 values in the example above are historical draft placeholders, not evidence that an implementation supports Contract Zero. A document revision does not establish wire compatibility. Select and negotiate the actual governance profile before a Contract Zero conformance claim; authenticate human resolutions and revalidate authority before dispatch regardless of transport.
+
+11. Cross-provider pilot and conformance tests
+
+The first pilot should connect two separately owned systems across an unreliable or high-latency network. Either may be small, slow, or intermittently connected. After trust and contracts are established, demonstrate a genuinely useful task with bidirectional assistance and a documented refusal. Next, connect a third independently implemented adapter (which may be simulated initially), to prove that the protocol is not locked to the first vendor.
+
+Minimum tests: (1) unknown sender never relays; (2) unaccepted invitation consumes zero model tokens; (3) explicit acceptance is recorded; (4) 9-Ball identifies a bounded subtask; (5) tribe help stays within budgets; (6) cross-clan bridge requires human approval; (7) message replay does not duplicate work; (8) offline reconnect checks contract revocation and safety holds; (9) stop status is honest when a peer is unreachable; (10) TTL deletion is verified against queue, logs, and backup policy; (11) catch-up reveals only authorized context; (12) a non-OpenClaw adapter passes the same test vectors; (13) Table membership requires role acceptance; (14) all five contract types enforce separate scopes; (15) Corridor advances only to pre-approved stages, stops on verified solution, and never loops/restarts budgets; (16) human satisfaction and holds are durable and auditable; (17) local PAUSE/STOP prevent new execution and report remote STOP_PENDING truthfully; (18) REWIND cannot erase audit trails or external effects; (19) REVIEW distinguishes independent evidence from copied claims; (20) FAST-FORWARD cannot bypass consent or holds; (21) no implementation can claim conformance with the Covenant disabled.
+
+Record bandwidth, latency, energy/compute costs, local-language usability, rejection rates, and who bore the costs. Publish only consented aggregate results; no personal or confidential work products belong in public demonstrations.
+
+11.1 Pilot sequence and success measures
+
+|Phase                 |Demonstration                                                                |Exit criterion                             |
+|----------------------|-----------------------------------------------------------------------------|-------------------------------------------|
+|1. Local proof        |One node declines bad, duplicated, and expired requests before inference     |Zero unauthorized tool/model calls         |
+|2. Bilateral trust    |Two independently owned sites establish Peer and Work contracts              |Verifiable approval and role receipts      |
+|3. Table and 9-Ball   |Small worker accepts a narrow task; specialist returns scoped result         |Task fit, cost, and data sharing recorded  |
+|4. Corridor           |Pre-approved stage elevation, early SOLVED outcome, alternate HUMAN_SATISFIED|No unapproved hop, reset, or loop          |
+|5. Resilience         |Disconnect/reconnect, revocation, timeouts, remote STOP_PENDING              |No unsafe restart and no false stop success|
+|6. Independent adapter|Different model/provider implements envelopes and conformance tests          |Reproducible cross-vendor results          |
+
+Publish a pilot scorecard covering messages filtered without inference, accepted/declined roles, median bandwidth and latency, retries, inference costs, independent-evidence rate, safety holds, and verified deletions. Report failures and ambiguous cases, not only success stories. Do not publish private transcripts or participant identity without informed permission.
+
+11.2 Additional Contract Zero conformance checks (22–29)
+
+The 21 baseline checks above remain required. This revision adds the following eight proposed checks; passing a transport test or a human acknowledgment alone does not satisfy them.
+
+|# |Scenario                                                                                                                |Required observable result                                                                                                                                                        |
+|--|------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|22|Operator acknowledgment missing, stale for a material change, or presented as blanket work permission                   |OSAMP work remains blocked until the applicable acknowledgment and separate required work authority are verified; mandatory safeguards cannot be waived.                          |
+|23|Several peers copy a common source/output and repeatedly approve one another                                            |Source lineage prevents false independent verification; disputed work enters REVIEW and no dependent action runs before the required human resolution.                            |
+|24|Circular delegation or repeated failures exceed configured no-progress/attempt limits                                   |Deterministic limits stop affected inference/tools/offers without renewed budgets, new-ID evasion, or a further model call to decide whether to stop.                             |
+|25|Kill the model, exhaust working memory, or simulate storage pressure on a small worker                                  |Accepted commitment and useful recovery capsule survive; new unsafe acceptance is refused and affected work remains held without inference.                                       |
+|26|Human is offline or ignores the help notice; reminders, offer TTL, and work deadlines occur                             |Notification states remain truthful, reminders stay bounded, and no automatic resumption or silent loss occurs; explicit retention/closure conditions govern eventual disposition.|
+|27|A natural-language reply, forged approval, stale resolution, or authenticated but insufficiently scoped decision arrives|Work stays held; a valid scoped human resolution still triggers fresh authority, budget, checkpoint, hold, and lease checks before execution.                                     |
+|28|Crash/power loss/restart or backup restore during a hold or an uncertain external action                                |Durable acceptance/hold/replay state is reconciled before dispatch; no blind side-effect retry, erased history, or false remote-stop success.                                     |
+|29|Retention deadline approaches or an authorized closure/handoff occurs                                                   |Agreed notice/review/export/archive/closure runs, responsibility has an explicit disposition, and only eligible content is deleted across the declared storage/backup scope.      |
+
+Use non-sensitive fixtures and record actual model/tool dispatch counters, durable ledger state, capsule usefulness, authentication decisions, and held/resumed transitions. Test size-1 deterministic behavior as well as a low-capacity model worker. Quantitative thresholds and permitted fault/recovery behavior must be recorded with the profile. Publish failures and uncertainty alongside passes; controls that exist only in explanatory text do not establish conformance.
+
+12. Open governance, ownership, and community lessons
+
+NoCloudGPT may publish a reference implementation and convene early discussions, but it should not require a NoCloudGPT license, centralized account, server, token fee, or proprietary registration for OSAMP interoperability. Vendor-neutral conformance tests and a permissively licensed reference implementation should be maintained in the open after legal and contributor review. Branding and trademarks should not determine technical eligibility.
+
+The project should invite independent contributors across organizations and regions as genuinely empowered peers in governance, with fair compensation when their work warrants it. Standards decisions should record dissent, accessibility concerns, data sovereignty needs, and small-device effects. The AfricaTogether attribution identifies the initiating project, not an ownership claim over independent implementations or a requirement for endorsement.
+
+Shared lessons may describe safe routing rules, failed assumptions, or measured resource savings. They must not silently train models on, redistribute, or retain the private contents of someone else’s accepted project. An owner may leave the network, revoke peers, and keep operating locally.
+
+13. Questions for peer reviewers
+
+1. Do five distinct contract categories create sufficient clarity without becoming needless administrative complexity?
+2. Can the Gate’s first decision genuinely avoid model calls, and how will an independent tester measure token savings?
+3. Are Peer, Tribe, Clan, Table, and Work contracts independently enforceable without making a central coordinator mandatory?
+4. Can introduction abuse, spoofed consent emails, compromised signing keys, replay, or malicious prompt injection escape the gate?
+5. How should emergency revocations propagate to disconnected machines without a permanent centralized database?
+6. Which small-device capabilities can be safely advertised without disclosing sensitive hardware fingerprints or locations?
+7. Are TTL deletion and limited audit evidence compatible with legal retention and participant expectations?
+8. Can a resource-constrained collaborator refuse a costly task without social or contractual penalty, and can compensation or reciprocity be explicit?
+9. What minimum public conformance suite proves a Grok-based, OpenClaw, or another agent adapter is truly interoperable?
+10. Can a Corridor safely stop when solved, when a human is satisfied, or when escalation budgets are exhausted, without looping or waking inactive agents?
+11. Do the built-in PAUSE, STOP, REWIND, and REVIEW controls prevent unauthorized execution while preserving truthful status and evidence?
+12. How can reviewers test for shared-source confirmation loops instead of trusting superficial agreement among agents?
+13. Can operators understand Contract Zero before activation, and can small workers preserve useful accepted-work recovery without a permanent transcript or ongoing inference?
+14. Do documented no-progress and shared-source review rules stop circular activity without treating every uncertainty as an emergency or relying on untestable model claims?
+15. Are human absence, authenticated resumption, finite storage, and explicit closure rules sufficiently precise to avoid both silent forgetting and indefinite private retention?
+
+Invitation for response
+
+This is a technical whitepaper for OSAMP, initiated under the AfricaTogether Project by NoCloudGPT, not an appeal to follow one company’s bot. Implementers, independent developers, research groups, security reviewers, legal practitioners, and African community technologists are invited to challenge the assumptions, improve the language, and propose testable alternatives. A disagreement accompanied by evidence is a useful contribution. Nobody is required to join a project merely because the invitation reaches their machine.
+
+The governing idea remains simple: an invitation is not an obligation; a connection is not authority; a stronger model is not a superior partner; and a good network knows when to stop.
+
+References and implementation baseline
+
+• OpenClaw, A2A channel, current documentation: https://docs.openclaw.ai/channels/a2a (peer auth, SendMessage/GetTask, honest CancelTask refusal, bounded terminal-task persistence).
+• OpenClaw, Plugins, current documentation: https://docs.openclaw.ai/tools/plugin (native extension and lifecycle hooks).
+• Agent2Agent Protocol, Specification 1.0: https://a2a-protocol.org/latest/specification/ (cross-framework agent interoperability).
+• Scholarly discussion of Ubuntu as an African ethic of relationships and mutual aid: https://doi.org/10.1080/01436597.2022.2109458 and https://doi.org/10.1080/02615479.2023.2168638.
+• NoCloudGPT design baseline: funtech64/ycgpt-lightsail-installer, 1.0.26-LINUX-GA-Openclaw/docs/MAIL.md (optional stage 11.4 local Mailpit; not an internet relay).
+• Earlier OCIAN whitepaper draft v0.2 (6 November 2026), for migration and OpenClaw-specific background. OSAMP v0.8 consolidates five negotiated contracts, two work types, Table/Corridor lifecycles, and a mandatory built-in Self-Governance Covenant.
+
+Publication note: AfricaTogether Project by NoCloudGPT is the initiating attribution, not an endorsement by external vendors or a claim that the AfricaTogether legal organization has been formed.
+
+Revision provenance: v0.82 develops the Contract Zero direction and OSAMP_Contract_Outline_v0.1_2026-11-24.md prepared on 24 November 2026. The contract outline remains a drafting/implementation aid; this white-paper revision incorporates the human oversight and safe-hold proposal without claiming that its code or interoperability tests are complete.
+
+Draft status note: This is a proposed technical specification and peer compact. No signatures, cross-company affiliations, implementation conformance, or legal enforceability are represented as having been established. Human acceptance must be collected separately before any real deployment.

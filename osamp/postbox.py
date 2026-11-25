@@ -8,6 +8,7 @@ an accepted obligation. The notification rows are not the authority record.
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from typing import Any
 
@@ -667,6 +668,54 @@ class Postbox:
             "SELECT COUNT(*) AS n FROM envelopes WHERE quarantine_reason IS NOT NULL"
         ).fetchone()
         return int(row["n"])
+
+    def tombstone_path(self) -> str:
+        return self.path + ".tombstones"
+
+    def append_tombstone(self, record: dict) -> None:
+        with open(self.tombstone_path(), "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+
+    def reapply_tombstones(self) -> None:
+        path = self.tombstone_path()
+        if not os.path.exists(path):
+            return
+        with open(path, encoding="utf-8") as handle:
+            lines = handle.readlines()
+        for line in lines:
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            obligation = self.get_obligation(record.get("obligation_id", ""))
+            if obligation is None:
+                continue
+            if record["kind"] == "spent" and obligation["budget_spent"] < int(record["spent"]):
+                self.update_obligation(
+                    obligation["obligation_id"],
+                    budget_spent=int(record["spent"]),
+                    updated_at=obligation["updated_at"],
+                )
+            elif record["kind"] == "revoked" and obligation["authority_state"] != "revoked":
+                execution = obligation["execution_state"]
+                if execution not in {"closed", "completed"}:
+                    execution = "held"
+                self.update_obligation(
+                    obligation["obligation_id"],
+                    authority_state="revoked",
+                    execution_state=execution,
+                    updated_at=obligation["updated_at"],
+                )
+            elif record["kind"] == "closed" and obligation["execution_state"] != "closed":
+                self.update_obligation(
+                    obligation["obligation_id"],
+                    authority_state="closed",
+                    execution_state="closed",
+                    objective=None,
+                    objective_deleted=True,
+                    updated_at=obligation["updated_at"],
+                )
 
     def trim_quarantine(self, keep: int) -> None:
         rows = self.conn.execute(

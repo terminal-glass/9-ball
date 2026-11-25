@@ -48,6 +48,18 @@ STAGES = {
             "Conformance ledger for all 29 checks",
         ],
     },
+    "49-4": {
+        "title": "Data, retention, and security schedules",
+        "review": "REVIEW-4.md",
+        "tests": ["tests.test_schedules_49_4"],
+        "pieces": [
+            "Data schedule",
+            "Retention schedule",
+            "Local backup deletion",
+            "Security schedule for notices and tools",
+            "Traceability rows for these schedules",
+        ],
+    },
 }
 
 

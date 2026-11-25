@@ -170,12 +170,41 @@ class Postbox:
         self.conn.execute("PRAGMA busy_timeout=5000")
         self._fail_commits = 0
         self._in_tx = False
+        self._mirrors: list[tuple[str, dict]] = []
+        self.backup_path = path + ".backup"
+        self.backup = sqlite3.connect(self.backup_path, timeout=5, isolation_level=None, check_same_thread=False)
+        self.backup.execute("PRAGMA synchronous=FULL")
 
     def close(self) -> None:
         self.conn.close()
+        self.backup.close()
 
     def create(self) -> None:
         self.conn.executescript(SCHEMA)
+        self.backup.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS copies (
+                copy_id TEXT PRIMARY KEY,
+                kind TEXT NOT NULL,
+                body_text TEXT,
+                disposition TEXT
+            );
+            CREATE TABLE IF NOT EXISTS policy (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            );
+            """
+        )
+        self.backup.execute(
+            "INSERT INTO policy(key, value) VALUES('declared_copies', ?) "
+            "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+            ("main database, audit rows in that database, and this local backup file",),
+        )
+        self.backup.execute(
+            "INSERT INTO policy(key, value) VALUES('offsite_backups', ?) "
+            "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+            ("none",),
+        )
         if self.get_meta("schema_version") is None:
             self.set_meta("schema_version", "1")
             self.set_meta("covenant_enabled", "1")
@@ -207,11 +236,36 @@ class Postbox:
             )
         self.conn.execute("COMMIT")
         self._in_tx = False
+        self._flush_mirrors()
 
     def rollback(self) -> None:
+        self._mirrors = []
         if self._in_tx:
             self.conn.execute("ROLLBACK")
             self._in_tx = False
+
+    def _queue_mirror(self, kind: str, copy_id: str, body_text: str | None, disposition: str | None) -> None:
+        self._mirrors.append((kind, copy_id, body_text, disposition))
+
+    def _flush_mirrors(self) -> None:
+        for kind, copy_id, body_text, disposition in self._mirrors:
+            self.backup.execute(
+                """INSERT INTO copies(copy_id, kind, body_text, disposition)
+                VALUES(?, ?, ?, ?)
+                ON CONFLICT(copy_id) DO UPDATE SET
+                    kind=excluded.kind,
+                    body_text=excluded.body_text,
+                    disposition=COALESCE(excluded.disposition, copies.disposition)""",
+                (f"{kind}:{copy_id}", kind, body_text, disposition),
+            )
+        self._mirrors = []
+
+    def vacuum_backup(self) -> None:
+        self.backup.execute("VACUUM")
+
+    def backup_policy(self) -> dict[str, str]:
+        rows = self.backup.execute("SELECT key, value FROM policy").fetchall()
+        return {row[0]: row[1] for row in rows}
 
     def transaction(self) -> "Tx":
         return Tx(self)
@@ -380,6 +434,7 @@ class Postbox:
                 row["updated_at"],
             ),
         )
+        self._queue_mirror("envelope", row["event_id"], None if row.get("body") is None else _dumps(row["body"]), None)
 
     def update_envelope(self, event_id: str, **fields: Any) -> None:
         mapping = {
@@ -402,6 +457,9 @@ class Postbox:
             return
         values.append(event_id)
         self.conn.execute(f"UPDATE envelopes SET {', '.join(sets)} WHERE event_id=?", values)
+        if "body" in fields:
+            body = fields["body"]
+            self._queue_mirror("envelope", event_id, None if body is None else _dumps(body), None)
 
     def insert_obligation(self, row: dict) -> None:
         self.conn.execute(
@@ -457,6 +515,7 @@ class Postbox:
                 row["updated_at"],
             ),
         )
+        self._queue_mirror("obligation", row["obligation_id"], row.get("objective"), None)
 
     def get_obligation(self, obligation_id: str) -> dict | None:
         row = self.conn.execute(
@@ -531,6 +590,12 @@ class Postbox:
         self.conn.execute(
             f"UPDATE obligations SET {', '.join(sets)} WHERE obligation_id=?", values
         )
+        if "objective" in fields or "closure" in fields:
+            objective = fields.get("objective")
+            disposition = None
+            if isinstance(fields.get("closure"), dict):
+                disposition = fields["closure"].get("disposition")
+            self._queue_mirror("obligation", obligation_id, objective, disposition)
 
     def list_obligations(self) -> list[dict]:
         rows = self.conn.execute("SELECT * FROM obligations ORDER BY created_at").fetchall()

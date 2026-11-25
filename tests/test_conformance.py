@@ -14,7 +14,7 @@ EXPECTED = {
     "WP-07": "pass",
     "WP-08": "pass",
     "WP-09": "pass",
-    "WP-10": "partial",
+    "WP-10": "pass",
     "WP-11": "pass",
     "WP-12": "pending",
     "WP-13": "pass",
@@ -33,7 +33,7 @@ EXPECTED = {
     "CZ-26": "pass",
     "CZ-27": "pass",
     "CZ-28": "partial",
-    "CZ-29": "partial",
+    "CZ-29": "pass",
 }
 
 

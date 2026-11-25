@@ -1,0 +1,6 @@
+@echo off
+rem Windows entry for the local OSAMP slice. Runs the Windows stage 49 controller.
+rem This does not install network mail.
+cd /d "%~dp0"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp049-windows.ps1" %*
+exit /b %ERRORLEVEL%

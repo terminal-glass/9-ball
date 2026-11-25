@@ -1,0 +1,4 @@
+#!/bin/sh
+# Mac entry for the local OSAMP slice. Runs the macOS stage 49 controller.
+cd "$(dirname "$0")"
+exec bash ./49-mac.sh "$@"

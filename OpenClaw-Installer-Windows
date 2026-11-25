@@ -1,0 +1,7 @@
+@echo off
+rem Pointer for the Windows OpenClaw entry name.
+rem This does not install OpenClaw. It opens the Windows stage 49 controller.
+rem It does not call stage 9.
+cd /d "%~dp0"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp049-windows.ps1" %*
+exit /b %ERRORLEVEL%

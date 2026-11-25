@@ -6,7 +6,7 @@ This paper is for people who need to understand the software without an informat
 
 ## Where this sits
 
-In the installer line this work is stage 49, the 9-Ball controller. This repository keeps the release-folder shape: `49.sh` calls `49-1.sh` through `49-4.sh` in order. macOS and Windows have matching entry files. Nothing here calls stage 9, and this copy has not been placed into the separate installer repository.
+In the installer line this work is stage 49, the 9-Ball controller. This repository keeps the release-folder shape: `49.sh` calls `49-1.sh` through `49-5.sh` in order. macOS and Windows have matching entry files. Nothing here calls stage 9, and this copy has not been placed into the separate installer repository.
 
 ## What this is
 
@@ -115,9 +115,9 @@ Statuses below are from `python3 -m osamp.conformance` and `python3 -m unittest 
 | B-QUEUE04, WP-10 | Expired invitation text is removed from the main file and the local backup. Accepted text stays. | `osamp/postbox.py` | WP-10 | Pass for the declared local copies. No off-site backup exists. |
 | B-CTRL01, WP-18, WP-20 | Rewind keeps history and outside effects. Fast-forward cannot skip a yes or a hold. | `osamp/covenant.py` | WP-18, WP-20 | Pass |
 | B-AUTH01, WP-21 | Switching off the covenant withdraws any conformance claim. | `osamp/node.py` | WP-21 | Pass |
-| B-CAP01, WP-04 | A bounded step can be named. A whole project is refused. | `osamp/contract_zero.py` | WP-04 | Partial: no measured benchmark |
+| B-CAP01, WP-04 | A measured local sample names one bounded step. A whole project is refused. | `osamp/measurement.py` | WP-04 | Pass as a local sample. Not a cross-vendor benchmark. |
 | B-COR02, WP-16 | Holds and a human-satisfied receipt stay on file. | `osamp/node.py`, `osamp/agreements.py` | WP-16 | Pass |
-| CZ-28 | Restart keeps uncertain outside effects and does not repeat them. | `osamp/node.py` | CZ-28 | Partial: no power cut, no backup restore |
+| CZ-28 | A hold survives reopen, snapshot restore, and a killed process. An uncertain effect is not repeated. | `osamp/crash_probe.py` | CZ-28 | Pass. The machine stayed powered on. |
 | P-Z09, CZ-29 | Retention notice and agreed closure remove the objective from the main file and the local backup, and keep the disposition. | `osamp/node.py` | CZ-29 | Pass for the declared local copies. No off-site backup exists. |
 | B-TRIBE01, WP-05 | Tribe help has its own budget. Membership is not a job. | `osamp/agreements.py` | WP-05 | Pass, local queue only |
 | B-CLAN01, WP-06 | A bridge needs a human approval. An endorsement does not open a route. | `osamp/agreements.py` | WP-06 | Pass, nothing transmitted |
@@ -135,4 +135,4 @@ python3 -m unittest discover -s tests -v
 python3 -m osamp.conformance
 ```
 
-On the run recorded after stage 49-3: 21 unit tests OK; conformance totals 24 pass, 4 partial, 1 pending, 0 fail. The remaining pending check is a second implementation.
+On the run recorded after stage 49-5: 28 unit tests OK; conformance totals 28 pass, 0 partial, 1 pending, 0 fail. The remaining pending check is a second implementation.

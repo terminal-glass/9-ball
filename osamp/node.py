@@ -55,10 +55,28 @@ class Node:
             profile = _profile_from_json(raw) if raw else default_profile()
         box.set_meta("profile_json", json.dumps(profile.material(), sort_keys=True))
         box.reapply_tombstones()
-        return cls(box, profile, clock)
+        node = cls(box, profile, clock)
+        node.ensure_measurement()
+        return node
 
     def close(self) -> None:
         self.postbox.close()
+
+    def ensure_measurement(self) -> dict:
+        raw = self.postbox.get_meta("measurement_json")
+        if raw:
+            return json.loads(raw)
+        from osamp.measurement import measure
+
+        sample = measure(self._now())
+        self.postbox.set_meta("measurement_json", json.dumps(sample, sort_keys=True))
+        return sample
+
+    def measurement(self) -> dict:
+        raw = self.postbox.get_meta("measurement_json")
+        if not raw:
+            return self.ensure_measurement()
+        return json.loads(raw)
 
     def reopen(self) -> "Node":
         path = self.postbox.path
@@ -397,7 +415,7 @@ class Node:
                 raise OsampError("not_offered", "There is no open offer to accept.")
             if not self.postbox.sender_known(envelope["sender_key_id"]):
                 raise OsampError("unknown_sender", "The sender is not permitted.")
-            fit = assess_task(self.profile, task_class, scope, subtask_id)
+            fit = assess_task(self.profile, task_class, scope, subtask_id, self.measurement())
             if fit["fit"] != "bounded_subtask":
                 raise OsampError("task_unfit", fit["plain"])
             if self.postbox.get_meta("storage_pressure") == "1":

@@ -9,7 +9,13 @@ OPERATOR_PROMISE = (
     "an unsupported conclusion, or passes work in circles, it must pause "
     "that work and ask an authorized person for help. It must keep a short "
     "recovery record for accepted work. Silence, a timeout, a stronger "
-    "model, and agreement among helpers do not authorize it to continue."
+    "model, and agreement among helpers do not authorize it to continue. "
+    "Stopping does not undo mail already sent or an outside effect that may "
+    "already have happened. Accepted work is kept until an explicit closure. "
+    "Unanswered invitations may expire. The person named on the work, or "
+    "their named deputy, is who may resolve a hold. Installation, a license "
+    "key, and opening a file are not this acknowledgment and are not "
+    "acceptance of a job."
 )
 
 HOLD_SENTENCES = {

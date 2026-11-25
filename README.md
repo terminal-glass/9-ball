@@ -10,7 +10,7 @@ This repository now contains a **local safety slice**. It can record a small acc
 
 Read [OSAMP-Architecture.md](OSAMP-Architecture.md). It explains the parts, the three status boards, and how a safe hold works.
 
-Then read `REVIEW-1.md` through `REVIEW-4.md`. Each note is one stage: five pieces, the tests, and the open questions.
+Then read `REVIEW-1.md` through `REVIEW-5.md`. Each note is one stage: five pieces, the tests, and the open questions.
 
 ## Folders and files
 
@@ -24,6 +24,7 @@ Then read `REVIEW-1.md` through `REVIEW-4.md`. Each note is one stage: five piec
 | `REVIEW-2.md` | Review note for stage 49-2, the five agreements. |
 | `REVIEW-3.md` | Review note for stage 49-3, receipts, catch-up, and restore. |
 | `REVIEW-4.md` | Review note for stage 49-4, data, retention, and security. |
+| `REVIEW-5.md` | Review note for stage 49-5, acknowledgment, schedules, and crash recovery. |
 | `OSAMP_Technical_Whitepaper_v0.82.txt` | Current technical draft, 24 November 2026. |
 | `OSAMP_Contract_Outline_v0.1_2026-11-24.txt` | Current contract and implementation outline. |
 | `OSAMP_Engineering_Introduction.pdf` | Older one-page brief from 17 November 2026. |
@@ -32,6 +33,7 @@ Then read `REVIEW-1.md` through `REVIEW-4.md`. Each note is one stage: five piec
 | `49-2.sh` | Stage 49-2: Peer, Tribe, Clan, Table, and Work. |
 | `49-3.sh` | Stage 49-3: receipts, catch-up, restore, and the check ledger. |
 | `49-4.sh` | Stage 49-4: data, retention, and security schedules. |
+| `49-5.sh` | Stage 49-5: acknowledgment, Project and Corridor schedules, a local measurement, and crash recovery. |
 | `49-mac.sh` and `49-N-mac.sh` | The same groups for macOS. |
 | `49-windows.ps1` and `49-N-windows.ps1` | The same groups for Windows. |
 | `OSAMP-Linux`, `OSAMP-Mac`, `OSAMP-Windows` | Point at the stage 49 controller for that platform. |

@@ -24,6 +24,18 @@ STAGES = {
             "Local profile and capacity",
         ],
     },
+    "49-2": {
+        "title": "Peer, Tribe, Clan, Table, and Work",
+        "review": "REVIEW-2.md",
+        "tests": ["tests.test_agreements"],
+        "pieces": [
+            "Peer contract",
+            "Tribe contract",
+            "Clan contract and bridge acceptance",
+            "Table contract",
+            "Work contract: Project and Corridor",
+        ],
+    },
 }
 
 

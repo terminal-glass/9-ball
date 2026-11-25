@@ -6,7 +6,7 @@ This paper is for people who need to understand the software without an informat
 
 ## Where this sits
 
-In the installer line this work is stage 49, the 9-Ball controller. This repository keeps the release-folder shape: `49.sh` calls `49-1.sh`, then any later `49-2.sh` and so on. macOS and Windows have matching entry files. Nothing here calls stage 9, and this copy has not been placed into the separate installer repository.
+In the installer line this work is stage 49, the 9-Ball controller. This repository keeps the release-folder shape: `49.sh` calls `49-1.sh`, then `49-2.sh`. macOS and Windows have matching entry files. Nothing here calls stage 9, and this copy has not been placed into the separate installer repository.
 
 ## What this is
 
@@ -24,7 +24,7 @@ This repository currently holds a **local slice**. It runs on one computer. It c
 4. **The gate.** Ordinary code checks the sender, the message type, the size, and duplicates before any tool runs. A language model is not asked to make that decision.
 5. **The local profile.** This copy publishes its own limits: how many tries, how deep a handoff may go, how much it will store, and how long a running permit lasts. Changing those limits requires the person to acknowledge them again.
 
-Contract Zero is not a sixth kind of agreement. The five negotiated kinds remain Peer, Tribe, Clan, Table, and Work. Those five are the next submission. They are not enforced as separate contracts in this slice.
+Contract Zero is not a sixth kind of agreement. The five negotiated kinds remain Peer, Tribe, Clan, Table, and Work. Submission 2 records those five on this same computer. Accepting one does not grant the powers of another. A bridge approval queues a local note. It still does not transmit anything.
 
 ## The parts, in everyday words
 
@@ -87,7 +87,7 @@ This is a draft profile called `covenant/local-draft-1`. The numbers in it are p
 ## What this slice does not do
 
 - It does not exchange live messages with a second organization.
-- It does not implement Peer, Tribe, Clan, Table, or Work as separate enforceable contracts. That is the next submission.
+- It records Peer, Tribe, Clan, Table, and Work on this computer. It does not deliver them to another computer.
 - It does not verify cryptographic signatures. Unknown security choices were left blocked rather than invented.
 - It does not measure a real 1–9 capability benchmark.
 - It does not delete backups, because it does not make backups.
@@ -116,16 +116,17 @@ Statuses below are from `python3 -m osamp.conformance` and `python3 -m unittest 
 | B-CTRL01, WP-18, WP-20 | Rewind keeps history and outside effects. Fast-forward cannot skip a yes or a hold. | `osamp/covenant.py` | WP-18, WP-20 | Pass |
 | B-AUTH01, WP-21 | Switching off the covenant withdraws any conformance claim. | `osamp/node.py` | WP-21 | Pass |
 | B-CAP01, WP-04 | A bounded step can be named. A whole project is refused. | `osamp/contract_zero.py` | WP-04 | Partial: no measured benchmark |
-| B-COR02, WP-16 | Holds and human decisions stay on file. | `osamp/node.py` | WP-16 | Partial: Corridor satisfaction is later |
+| B-COR02, WP-16 | Holds and a human-satisfied receipt stay on file. | `osamp/node.py`, `osamp/agreements.py` | WP-16 | Pass |
 | CZ-28 | Restart keeps uncertain outside effects and does not repeat them. | `osamp/node.py` | CZ-28 | Partial: no power cut, no backup restore |
 | P-Z09, CZ-29 | Retention notice and agreed closure remove only the eligible objective from this file. | `osamp/node.py` | CZ-29 | Partial: no off-site copies |
-| B-TRIBE01, WP-05 | Tribe help has its own budget. | — | WP-05 | Pending |
-| B-CLAN01, WP-06 | A bridge needs a human approval. | — | WP-06 | Pending |
+| B-TRIBE01, WP-05 | Tribe help has its own budget. Membership is not a job. | `osamp/agreements.py` | WP-05 | Pass, local queue only |
+| B-CLAN01, WP-06 | A bridge needs a human approval. An endorsement does not open a route. | `osamp/agreements.py` | WP-06 | Pass, nothing transmitted |
 | B-DATA02, WP-11 | Catch-up shows only the authorized minimum. | — | WP-11 | Pending |
 | B-MSG05, WP-12 | A second implementation passes the same checks. | — | WP-12 | Pending |
-| B-TABLE01, WP-13 | Sitting at a Table requires an accepted role. | — | WP-13 | Pending |
-| B-AUTH01, WP-14 | The five agreements do not grant each other's powers. | — | WP-14 | Pending |
-| B-COR02, WP-15 | A Corridor follows its stages and does not reset its budget. | — | WP-15 | Pending |
+| B-TABLE01, WP-13 | Sitting at a Table requires an accepted role. | `osamp/agreements.py` | WP-13 | Pass |
+| B-AUTH01, WP-14 | The five agreements do not grant each other's powers. | `osamp/agreements.py` | WP-14 | Pass |
+| B-COR01, B-COR02, WP-15 | A Corridor follows its stages, stops when solved, and does not reset its budget. | `osamp/agreements.py` | WP-15 | Pass |
+| B-WORK01 | A project completes only when its required checks passed. | `osamp/agreements.py` | `tests/test_agreements.py` | Pass for that local rule |
 
 The commands that produced this table are:
 
@@ -134,4 +135,4 @@ python3 -m unittest discover -s tests -v
 python3 -m osamp.conformance
 ```
 
-On the run recorded for this submission: 7 unit tests OK; conformance totals 17 pass, 5 partial, 7 pending, 0 fail.
+On the run recorded after submission 2: 10 unit tests OK; conformance totals 23 pass, 4 partial, 2 pending, 0 fail.

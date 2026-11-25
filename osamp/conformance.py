@@ -11,6 +11,7 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
+from osamp.agreements import AgreementBook
 from osamp.auth import mac
 from osamp.canonical import digest
 from osamp.clock import Clock
@@ -208,6 +209,217 @@ def check_wp04(tmp: Path) -> tuple[str, str]:
     )
 
 
+def _role_accept_fields(event_id: str, work_id: str) -> dict:
+    return {
+        "event_id": event_id,
+        "work_id": work_id,
+        "objective": "Tighten one public sentence about rain.",
+        "task_class": "public-wording",
+        "scope": "bounded",
+        "subtask_id": "sentence-1",
+        "budget_ceiling": 10,
+        "human_id": "human-example",
+        "deputy_id": "deputy-example",
+        "contract_version": "work/local-1",
+        "contract_digest": "sha256:local-work-example",
+        "deadline": "2026-12-01T00:00:00+00:00",
+        "retention_deadline": "2026-12-15T00:00:00+00:00",
+        "tool_allowlist": ["format-check"],
+    }
+
+
+def check_wp05(tmp: Path) -> tuple[str, str]:
+    node, keys = _boot(tmp)
+    called = _guard_model(node)
+    book = AgreementBook(node)
+    tribe = book.propose_tribe("writers", ["helper-1"], 1)
+    book.accept_tribe(tribe, "human-example", keys["human"])
+    assert node.postbox.list_obligations() == []
+    first = book.offer_tribe_help(tribe, "helper-1", "read one public sentence")
+    assert first["offers_used"] == 1 and first["queued"] is True
+    try:
+        book.offer_tribe_help(tribe, "helper-1", "read it again")
+        raise AssertionError("tribe budget was exceeded")
+    except OsampError as exc:
+        assert exc.code == "budget_spent"
+    other = book.propose_tribe("readers", ["helper-2"], 2)
+    book.accept_tribe(other, "human-example", keys["human"])
+    book.decline_tribe_help(other, "helper-2")
+    try:
+        book.offer_tribe_help(other, "helper-2", "ask again")
+        raise AssertionError("declined helper was recruited again")
+    except OsampError as exc:
+        assert exc.code == "already_declined"
+    assert node.model_calls() == 0 and called == []
+    assert book._get(tribe)["body"]["offers_used"] == 1
+    return (
+        "pass",
+        "Tribe membership created no job. One help offer was queued locally, the next was refused, "
+        "and a declined helper was not asked again. Model calls stayed at 0. Nothing was transmitted.",
+    )
+
+
+def check_wp06(tmp: Path) -> tuple[str, str]:
+    node, keys = _boot(tmp)
+    called = _guard_model(node)
+    book = AgreementBook(node)
+    clan = book.propose_clan("example-federation", ["dest-known"], 1)
+    book.accept_clan(clan, "human-example", keys["human"])
+    book.record_endorsement("dest-new", "A fixture statement, not an approval.")
+    try:
+        book.escalate(clan, "dest-new", 1)
+        raise AssertionError("endorsement opened a destination")
+    except OsampError as exc:
+        assert exc.code == "boundary_refused"
+    bridge = book.propose_bridge(
+        clan, "one harmless fixture", ["dest-new"], "public-example", "2026-11-30T00:00:00+00:00"
+    )
+    try:
+        book.escalate(clan, "dest-new", 1)
+        raise AssertionError("unapproved bridge opened a destination")
+    except OsampError as exc:
+        assert exc.code == "boundary_refused"
+    book.approve_bridge(bridge, "human-example", keys["human"])
+    queued = book.escalate(clan, "dest-new", 1)
+    assert queued["queued_locally"] is True and queued["transmitted"] is False
+    assert node.relay_count() == 0 and called == []
+    try:
+        book.escalate(clan, "dest-known", 2)
+        raise AssertionError("hop limit was ignored")
+    except OsampError as exc:
+        assert exc.code == "boundary_refused"
+    assert book._get(clan)["body"]["destinations"] == ["dest-known"]
+    return (
+        "pass",
+        "An unapproved destination and an endorsement were refused. A human-approved bridge queued a local "
+        "note only: transmitted=false and relay_count=0. The clan destination list did not grow. "
+        "Names are fixtures, not a live route.",
+    )
+
+
+def check_wp13(tmp: Path) -> tuple[str, str]:
+    node, keys = _boot(tmp)
+    book = AgreementBook(node)
+    peer = book.propose_peer("owner-b", "worker-b", ["WORK_OFFER"], ["public-example"])
+    book.accept_peer(peer, "human-example", keys["human"])
+    table = book.propose_table("project-words", "editor", "worker-b")
+    _offer(node, "seat")
+    assert book.role_status(table, "editor") == "offered"
+    assert node.postbox.obligation_by_event("seat") is None
+    book.accept_table_role(table, "editor", "human-example", keys["human"], **_role_accept_fields("seat", "table-work"))
+    assert book.role_status(table, "editor") == "accepted"
+    node = node.reopen()
+    book = AgreementBook(node)
+    assert book.role_status(table, "editor") == "accepted"
+    other = book.propose_table("project-other", "editor", "worker-b")
+    assert book.role_status(other, "editor") == "offered"
+    book.propose_handoff(table, "editor", "worker-c")
+    assert book.role_status(table, "editor") == "accepted"
+    return (
+        "pass",
+        "Delivering an invitation did not seat anyone. Accepting the role did, and that acceptance survived "
+        "reopening the file. Another table stayed unseated, and a proposed handoff did not release the first role.",
+    )
+
+
+def check_wp14(tmp: Path) -> tuple[str, str]:
+    node, keys = _boot(tmp)
+    book = AgreementBook(node)
+    senders = node.postbox.list_senders()
+    book.accept_peer(
+        book.propose_peer("owner-b", "worker-b", ["WORK_OFFER"], ["public-example"]),
+        "human-example",
+        keys["human"],
+    )
+    tribe = book.propose_tribe("circle", ["helper-1"], 1)
+    book.accept_tribe(tribe, "human-example", keys["human"])
+    book.accept_peer(
+        book.propose_peer("owner-c", "worker-c", ["WORK_OFFER"], ["public-example"]),
+        "human-example",
+        keys["human"],
+    )
+    assert book._get(tribe)["body"]["members"] == ["helper-1"]
+    clan = book.propose_clan("federation", ["dest-1"], 1)
+    book.accept_clan(clan, "human-example", keys["human"])
+    _offer(node, "scope")
+    table = book.propose_table("project-one", "editor", "worker-b")
+    book.accept_table_role(
+        table, "editor", "human-example", keys["human"], **_role_accept_fields("scope", "scope-work")
+    )
+    assert book._get(clan)["body"]["destinations"] == ["dest-1"]
+    work = book.propose_project("Tighten one sentence", ["one sentence"], ["spell"], 5)
+    book.accept_work(work, "human-example", keys["human"])
+    assert node.postbox.list_senders() == senders
+    other = book.propose_table("project-two", "editor", "worker-b")
+    assert book.role_status(other, "editor") == "offered"
+    assert node.postbox.list_obligations()[0]["work_id"] == "scope-work"
+    return (
+        "pass",
+        "Accepting a peer did not add a tribe member. A new peer did not join the tribe or the clan "
+        "destination list. A table role did not change the clan. A work agreement did not add a sender. "
+        "A second table stayed offered.",
+    )
+
+
+def check_wp15(tmp: Path) -> tuple[str, str]:
+    node, keys = _boot(tmp)
+    called = _guard_model(node)
+    book = AgreementBook(node)
+    solved = book.propose_corridor(
+        [
+            {"stage_id": "read", "recipient": "worker-b", "cost": 1},
+            {"stage_id": "check", "recipient": "worker-c", "cost": 1},
+        ],
+        5,
+    )
+    book.accept_work(solved, "human-example", keys["human"])
+    assert book.offer_corridor_stage(solved)["recipient"] == "worker-b"
+    book.solve_corridor(solved, "sha256:solved-example")
+    try:
+        book.offer_corridor_stage(solved)
+        raise AssertionError("solved corridor continued")
+    except OsampError as exc:
+        assert exc.code == "corridor_closed"
+    looped = book.propose_corridor(
+        [
+            {"stage_id": "a", "recipient": "worker-b", "cost": 2},
+            {"stage_id": "b", "recipient": "worker-c", "cost": 2},
+        ],
+        3,
+    )
+    book.accept_work(looped, "human-example", keys["human"])
+    book.offer_corridor_stage(looped)
+    assert book.accept_corridor_stage(looped, "a")["spent"] == 2
+    book.offer_corridor_stage(looped)
+    assert book._get(looped)["body"]["stages"][0]["status"] == "accepted"
+    repeated = book.accept_corridor_stage(looped, "a")
+    assert repeated["repeated"] is True
+    assert book._get(looped)["body"]["spent"] == 2
+    book.advance_corridor(looped)
+    try:
+        book.attempt_earlier_stage(looped, 0)
+        raise AssertionError("corridor loop was allowed")
+    except OsampError as exc:
+        assert exc.code == "circular_delegation"
+    assert book._get(looped)["body"]["outcome"] == "held"
+    assert book._get(looped)["body"]["spent"] == 2
+    declined = book.propose_corridor(
+        [{"stage_id": "only", "recipient": "worker-b", "cost": 1}],
+        4,
+    )
+    book.accept_work(declined, "human-example", keys["human"])
+    book.offer_corridor_stage(declined)
+    result = book.decline_corridor_stage(declined, "only")
+    assert result["recipients"] == ["worker-b"] and result["outcome"] == "held"
+    assert called == [] and node.model_calls() == 0
+    return (
+        "pass",
+        "A solved corridor took no further stage. Offering an accepted stage again did not reset it "
+        "or double its spend. "
+        "Returning to an earlier stage held the corridor with the same spend. A decline did not add a recipient.",
+    )
+
+
 def check_wp07(tmp: Path) -> tuple[str, str]:
     node, _keys = _boot(tmp)
     envelope = _offer(node)
@@ -305,14 +517,25 @@ def check_wp16(tmp: Path) -> tuple[str, str]:
     obligation = node.postbox.get_obligation(obligation_id)
     decision = _decision(obligation, "leave_held", "human-example")
     node.resolve_human(decision, keys["human"], mac(keys["human"], decision))
+    book = AgreementBook(node)
+    corridor = book.propose_corridor(
+        [{"stage_id": "read", "recipient": "worker-b", "cost": 1}],
+        3,
+    )
+    book.accept_work(corridor, "human-example", keys["human"])
+    book.human_satisfied(corridor, "human-example", keys["human"])
     node = node.reopen()
+    book = AgreementBook(node)
     kinds = [item["kind"] for item in node.postbox.list_audit()]
-    assert "human_decision" in kinds
+    assert "human_decision" in kinds and "human_satisfied" in kinds
     assert node.postbox.get_obligation(obligation_id)["execution_state"] == "held"
+    assert book._get(corridor)["body"]["outcome"] == "human_satisfied"
+    receipts = [item for item in node.postbox.list_receipts() if item["kind"] == "human_satisfaction"]
+    assert len(receipts) == 1
     return (
-        "partial",
-        "A human leave-held decision and the hold survived reopening the file. "
-        "HUMAN_SATISFIED for a Corridor is not implemented in this submission.",
+        "pass",
+        "A leave-held decision and a HUMAN_SATISFIED receipt both survived reopening the file. "
+        "The held obligation stayed held.",
     )
 
 
@@ -786,17 +1009,17 @@ CHECKS = [
     ("WP-02", "Unaccepted invitation uses no model", check_wp02),
     ("WP-03", "Explicit acceptance is durable", check_wp03),
     ("WP-04", "Capability fit identifies a bounded step", check_wp04),
-    ("WP-05", "Tribe help stays within budgets", lambda tmp: check_pending(tmp, "Peer, Tribe, Clan, Table, and Work enforcement is a later submission.")),
-    ("WP-06", "Cross-clan bridge requires human approval", lambda tmp: check_pending(tmp, "Bridge acceptance is a later submission. No clan route is implemented.")),
+    ("WP-05", "Tribe help stays within budgets", check_wp05),
+    ("WP-06", "Cross-clan bridge requires human approval", check_wp06),
     ("WP-07", "Replay does not duplicate accepted work", check_wp07),
     ("WP-08", "Reopen checks revocation and holds", check_wp08),
     ("WP-09", "Unreachable stop stays STOP_PENDING", check_wp09),
     ("WP-10", "TTL deletion covers stored copies", check_wp10),
     ("WP-11", "Catch-up exposes only authorized context", lambda tmp: check_pending(tmp, "Catch-up packages are a later submission.")),
     ("WP-12", "A second adapter passes the same vectors", lambda tmp: check_pending(tmp, "Only this Python copy exists. No second implementation was run.")),
-    ("WP-13", "Table membership requires role acceptance", lambda tmp: check_pending(tmp, "Table role rules are a later submission.")),
-    ("WP-14", "Five agreement categories have separate scopes", lambda tmp: check_pending(tmp, "The five negotiated categories are a later submission.")),
-    ("WP-15", "Corridor stages do not loop or reset budgets", lambda tmp: check_pending(tmp, "Project and Corridor behavior is a later submission.")),
+    ("WP-13", "Table membership requires role acceptance", check_wp13),
+    ("WP-14", "Five agreement categories have separate scopes", check_wp14),
+    ("WP-15", "Corridor stages do not loop or reset budgets", check_wp15),
     ("WP-16", "Human satisfaction and holds are durable", check_wp16),
     ("WP-17", "Local pause and stop are truthful", check_wp17),
     ("WP-18", "Rewind keeps history and outside effects", check_wp18),

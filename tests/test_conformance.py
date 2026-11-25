@@ -9,18 +9,18 @@ EXPECTED = {
     "WP-02": "pass",
     "WP-03": "pass",
     "WP-04": "partial",
-    "WP-05": "pending",
-    "WP-06": "pending",
+    "WP-05": "pass",
+    "WP-06": "pass",
     "WP-07": "pass",
     "WP-08": "pass",
     "WP-09": "pass",
     "WP-10": "partial",
     "WP-11": "pending",
     "WP-12": "pending",
-    "WP-13": "pending",
-    "WP-14": "pending",
-    "WP-15": "pending",
-    "WP-16": "partial",
+    "WP-13": "pass",
+    "WP-14": "pass",
+    "WP-15": "pass",
+    "WP-16": "pass",
     "WP-17": "pass",
     "WP-18": "pass",
     "WP-19": "pass",
@@ -38,7 +38,7 @@ EXPECTED = {
 
 
 class ConformanceReportTests(unittest.TestCase):
-    def test_statuses_match_the_submission_1_report(self):
+    def test_statuses_match_the_recorded_report(self):
         results = run_all()
         got = {item.check_id: item.status for item in results}
         self.assertEqual(got, EXPECTED)

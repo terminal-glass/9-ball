@@ -1,6 +1,19 @@
-# Review 2 — Peer, Tribe, Clan, Table, and Work
+# Review 2 — stage 49-2, Peer, Tribe, Clan, Table, and Work
 
-This submission stacks on submission 1. Read `REVIEW-1.md` for the foundation. This note covers only the five negotiated agreements.
+This is installer stage **49-2**. `49.sh` calls `49-1.sh` first, then `49-2.sh`. Read `REVIEW-1.md` for stage 49-1. This note covers only the five negotiated agreements.
+
+| Platform | Controller | This group |
+| --- | --- | --- |
+| Linux | `49.sh` | `49-2.sh` |
+| macOS | `49-mac.sh` | `49-2-mac.sh` |
+| Windows | `49-windows.ps1` | `49-2-windows.ps1` |
+
+```text
+bash 49-2.sh --dry-run
+bash 49-2.sh --status
+bash 49-2.sh --verify
+bash 49.sh --dry-run
+```
 
 Nothing was transmitted. A queued bridge note is a row in the local database. It is not a message to Lagos, Madrid, or anywhere else. Do not merge until Jonathan gives an explicit go-ahead.
 

@@ -6,7 +6,7 @@ This paper is for people who need to understand the software without an informat
 
 ## Where this sits
 
-In the installer line this work is stage 49, the 9-Ball controller. This repository keeps the release-folder shape: `49.sh` calls `49-1.sh`, then any later `49-2.sh` and so on. macOS and Windows have matching entry files. Nothing here calls stage 9, and this copy has not been placed into the separate installer repository.
+In the installer line this work is stage 49, the 9-Ball controller. This repository keeps the release-folder shape: `49.sh` calls `49-1.sh`, then `49-2.sh`. macOS and Windows have matching entry files. Nothing here calls stage 9, and this copy has not been placed into the separate installer repository.
 
 ## What this is
 

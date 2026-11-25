@@ -21,14 +21,15 @@ Then read [REVIEW-1.md](REVIEW-1.md) and [REVIEW-2.md](REVIEW-2.md). They say wh
 | `more/` | Older notes. The previous whitepaper PDF lives here. |
 | `OSAMP-Architecture.md` | Plain-language architecture for this slice. |
 | `REVIEW-1.md` | Review note for submission 1, the foundation. |
-| `REVIEW-2.md` | Review note for submission 2, the five agreements. |
+| `REVIEW-2.md` | Review note for stage 49-2, the five agreements. |
 | `OSAMP_Technical_Whitepaper_v0.82.txt` | Current technical draft, 24 November 2026. |
 | `OSAMP_Contract_Outline_v0.1_2026-11-24.txt` | Current contract and implementation outline. |
 | `OSAMP_Engineering_Introduction.pdf` | Older one-page brief from 17 November 2026. |
 | `49.sh` | Linux controller. Runs `49-1.sh`, then later sub-stages, in order. |
 | `49-1.sh` | Stage 49-1: Contract Zero and the foundation. |
-| `49-mac.sh`, `49-1-mac.sh` | The same groups for macOS. |
-| `49-windows.ps1`, `49-1-windows.ps1` | The same groups for Windows. |
+| `49-2.sh` | Stage 49-2: Peer, Tribe, Clan, Table, and Work. |
+| `49-mac.sh`, `49-1-mac.sh`, `49-2-mac.sh` | The same groups for macOS. |
+| `49-windows.ps1`, `49-1-windows.ps1`, `49-2-windows.ps1` | The same groups for Windows. |
 | `OSAMP-Linux`, `OSAMP-Mac`, `OSAMP-Windows` | Point at the stage 49 controller for that platform. |
 | `OpenClaw-Installer-Linux`, `OpenClaw-Installer-Mac`, `OpenClaw-Installer-Windows` | Point at the same controllers. They do not install OpenClaw and they do not call stage 9. |
 

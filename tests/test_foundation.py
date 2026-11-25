@@ -136,6 +136,79 @@ class FoundationTests(unittest.TestCase):
             ).fetchone()["remaining_accepts"]
             self.assertEqual(remaining, 9)
 
+    def test_falsy_signature_field_is_still_refused(self):
+        from osamp.canonical import digest
+
+        with tempfile.TemporaryDirectory() as directory:
+            node, _keys = _boot(Path(directory))
+            for index, value in enumerate(({}, "", [], 0, False, None)):
+                payload = {"text": "public sentence"}
+                result = node.receive(
+                    {
+                        "event_id": f"sig-{index}",
+                        "event_type": "WORK_OFFER",
+                        "sender_key_id": "worker-b",
+                        "recipient_key_id": "worker-a",
+                        "sent_at": node.clock.now(),
+                        "expires_at": "2026-11-25T00:00:00+00:00",
+                        "payload": payload,
+                        "payload_digest": digest(payload),
+                        "signature": value,
+                    }
+                )
+                self.assertEqual(result["code"], "signature_not_adopted", value)
+                self.assertEqual(node.model_calls(), 0)
+
+    def test_allowlisted_stranger_cannot_force_stop_pending(self):
+        from osamp.canonical import digest
+
+        with tempfile.TemporaryDirectory() as directory:
+            node, _keys = _boot(Path(directory))
+            node.permit_sender("worker-c")
+            _offer(node)
+            obligation_id = _accept(node)
+            node.play(obligation_id)
+            payload = {"obligation_id": obligation_id}
+            node.receive(
+                {
+                    "event_id": "stop-stranger",
+                    "event_type": "WORK_STOP",
+                    "sender_key_id": "worker-c",
+                    "recipient_key_id": "worker-a",
+                    "sent_at": node.clock.now(),
+                    "expires_at": "2026-11-25T00:00:00+00:00",
+                    "payload": payload,
+                    "payload_digest": digest(payload),
+                }
+            )
+            self.assertEqual(node.postbox.get_obligation(obligation_id)["execution_state"], "working")
+            node.receive(
+                {
+                    "event_id": "stop-party",
+                    "event_type": "WORK_STOP",
+                    "sender_key_id": "worker-b",
+                    "recipient_key_id": "worker-a",
+                    "sent_at": node.clock.now(),
+                    "expires_at": "2026-11-25T00:00:00+00:00",
+                    "payload": payload,
+                    "payload_digest": digest(payload),
+                }
+            )
+            self.assertEqual(node.postbox.get_obligation(obligation_id)["execution_state"], "stop_pending")
+
+    def test_accept_updates_the_offer_role_and_negative_cost_is_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            node, _keys = _boot(Path(directory))
+            _offer(node)
+            obligation_id = _accept(node)
+            self.assertEqual(node.postbox.get_envelope("offer-1")["role_state"], "accepted")
+            node.play(obligation_id)
+            node.note_progress(obligation_id, "step", cost=1)
+            with self.assertRaises(OsampError) as caught:
+                node.note_progress(obligation_id, "step", cost=-1)
+            self.assertEqual(caught.exception.code, "budget_refused")
+            self.assertEqual(node.postbox.get_obligation(obligation_id)["budget_spent"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

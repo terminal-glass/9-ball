@@ -36,7 +36,7 @@ def screen(
     existing: dict | None,
     payload_too_big: bool,
 ) -> GateDecision:
-    if envelope.get("signature"):
+    if "signature" in envelope:
         return GateDecision(
             code="signature_not_adopted",
             plain=(

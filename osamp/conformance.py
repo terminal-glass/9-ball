@@ -180,11 +180,12 @@ def check_wp03(tmp: Path) -> tuple[str, str]:
     assert restored["capsule"]["objective"]
     fresh = node.postbox.get_envelope("offer-1")
     assert fresh["delivery_state"] == "delivered"
+    assert fresh["role_state"] == "accepted"
     assert restored["authority_state"] == "accepted"
     return (
         "pass",
         "A failed save left no obligation. After a successful accept, delivery stayed delivered, "
-        "authority was accepted, execution was ready, and the recovery record survived reopening the file.",
+        "the offer's role became accepted, execution was ready, and the recovery record survived reopening the file.",
     )
 
 

@@ -289,11 +289,24 @@ class Node:
                 decision.code == "admitted"
                 and envelope.get("event_type") == "WORK_STOP"
                 and payload.get("obligation_id")
+                and self._stop_sender_authorized(payload["obligation_id"], envelope.get("sender_key_id"), payload)
             ):
                 self._enter_stop_pending(payload["obligation_id"], "inbound")
             return {"code": decision.code, "plain": decision.plain, "event_id": envelope["event_id"]}
 
         return self._tx(run)
+
+    def _stop_sender_authorized(self, obligation_id: str, sender_key_id: str | None, payload: dict) -> bool:
+        obligation = self.postbox.get_obligation(obligation_id)
+        if obligation is None or not sender_key_id:
+            return False
+        source = self.postbox.get_envelope(obligation["event_id"])
+        if source is None or source.get("sender_key_id") != sender_key_id:
+            return False
+        claimed = payload.get("contract_digest")
+        if claimed and claimed != obligation.get("contract_digest"):
+            return False
+        return True
 
     def _trim_quarantine(self) -> None:
         keep = self.profile.limits["max_quarantine"]
@@ -464,6 +477,7 @@ class Node:
                 {"obligation_id": obligation_id, "event_id": event_id, "digest": contract_digest},
                 now,
             )
+            self.postbox.update_envelope(event_id, role_state="accepted", updated_at=now)
             return obligation_id
 
         return self._tx(run)
@@ -615,6 +629,8 @@ class Node:
     def note_progress(self, obligation_id: str, progress_digest: str | None, cost: int = 1) -> dict:
         def run():
             obligation = self._load(obligation_id)
+            if isinstance(cost, bool) or not isinstance(cost, int) or cost < 0:
+                raise OsampError("budget_refused", "A recorded cost cannot be negative.")
             if obligation["execution_state"] != "working":
                 raise OsampError("not_running", "Attempts are recorded only while this work is running.")
             if obligation["budget_spent"] + cost > obligation["budget_ceiling"]:

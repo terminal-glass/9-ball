@@ -926,8 +926,54 @@ def check_cz27(tmp: Path) -> tuple[str, str]:
     )
 
 
-def check_cz28(tmp: Path) -> tuple[str, str]:
+def check_wp11(tmp: Path) -> tuple[str, str]:
     node, _keys = _boot(tmp)
+    _offer(node, "public")
+    assert node.postbox.obligation_by_event("public") is None
+    try:
+        node.catch_up("not-accepted-yet", "review")
+        raise AssertionError("catch-up ran before acceptance")
+    except OsampError as exc:
+        assert exc.code == "catchup_refused"
+    public_id = _accept(node, "public")
+    package = node.catch_up(public_id, "review", ["summary"])
+    assert set(package) == {"summary", "evidence", "uncertainty", "subtask", "contract_version"}
+    try:
+        node.catch_up(public_id, "review", ["transcript"])
+        raise AssertionError("transcript was returned")
+    except OsampError as exc:
+        assert exc.code == "catchup_refused"
+    _offer(
+        node,
+        "clinic",
+        payload={"text": "non-sensitive placeholder"},
+        data_class="private-medical",
+    )
+    clinic_id = _accept(
+        node,
+        "clinic",
+        work_id="clinic-placeholder",
+        objective="placeholder only, not a real record",
+    )
+    try:
+        node.catch_up(clinic_id, "public-news")
+        raise AssertionError("medical placeholder was placed on a public route")
+    except OsampError as exc:
+        assert exc.code == "catchup_refused"
+    private = node.catch_up(clinic_id, "designated-review")
+    assert private["summary"] == "placeholder only, not a real record"
+    assert "transcript" not in private
+    assert node.model_calls() == 0
+    return (
+        "pass",
+        "Catch-up was refused before acceptance and when a transcript was requested. "
+        "A private-medical placeholder was refused on a public-news route and returned only the short fields on a designated route. "
+        "The placeholder is not a real health record.",
+    )
+
+
+def check_cz28(tmp: Path) -> tuple[str, str]:
+    node, _keys = _boot(tmp, limits={"max_open_obligations": 4})
     _offer(node, "held")
     held = _accept(node, "held", work_id="held-work")
     node.play(held)
@@ -935,6 +981,22 @@ def check_cz28(tmp: Path) -> tuple[str, str]:
     _offer(node, "remote")
     remote = _accept(node, "remote", work_id="remote-work")
     node.request_remote_stop(remote, "worker-b")
+    _offer(node, "budgeted")
+    budgeted = _accept(node, "budgeted", work_id="budgeted-work", budget_ceiling=5)
+    node.play(budgeted)
+    snapshot = tmp / "before-revoke.sqlite"
+    node.snapshot(str(snapshot))
+    node.note_progress(budgeted, "step-1", cost=1)
+    node.revoke_work(budgeted)
+    node = node.restore_from_snapshot(str(snapshot))
+    restored = node.postbox.get_obligation(budgeted)
+    assert restored["authority_state"] == "revoked"
+    assert restored["budget_spent"] == 1
+    try:
+        node.submit_result(budgeted, "sha256:late", True)
+        raise AssertionError("late result resurrected revoked work")
+    except OsampError as exc:
+        assert exc.code == "result_refused"
     node = node.reopen()
     try:
         node.play(held)
@@ -950,8 +1012,9 @@ def check_cz28(tmp: Path) -> tuple[str, str]:
     assert any(item["kind"] == "uncertain_effect" for item in node.postbox.get_obligation(held)["history"])
     return (
         "partial",
-        "Reopening the same file kept the hold-equivalent uncertain state, refused a blind replay, "
-        "kept history, and left STOP_PENDING unconfirmed. Physical power was not cut, and a backup restore is not in this submission.",
+        "Reopening the same file kept the uncertain state, refused a blind replay, kept history, and left "
+        "STOP_PENDING unconfirmed. A snapshot taken before revoke and spend was restored, and the sidecar "
+        "put the revocation and the spent budget back. Physical power was not cut.",
     )
 
 
@@ -1015,7 +1078,7 @@ CHECKS = [
     ("WP-08", "Reopen checks revocation and holds", check_wp08),
     ("WP-09", "Unreachable stop stays STOP_PENDING", check_wp09),
     ("WP-10", "TTL deletion covers stored copies", check_wp10),
-    ("WP-11", "Catch-up exposes only authorized context", lambda tmp: check_pending(tmp, "Catch-up packages are a later submission.")),
+    ("WP-11", "Catch-up exposes only authorized context", check_wp11),
     ("WP-12", "A second adapter passes the same vectors", lambda tmp: check_pending(tmp, "Only this Python copy exists. No second implementation was run.")),
     ("WP-13", "Table membership requires role acceptance", check_wp13),
     ("WP-14", "Five agreement categories have separate scopes", check_wp14),

@@ -7,6 +7,7 @@ It does not send network mail and it does not talk to another country.
 from __future__ import annotations
 
 import json
+import shutil
 import sqlite3
 import uuid
 from typing import Any
@@ -41,6 +42,7 @@ class Node:
         self.profile = profile
         self.clock = clock
         self.hook = None
+        self._pending_tombstones: list[dict] = []
 
     @classmethod
     def open(cls, path: str, profile: Profile | None = None, clock: Clock | None = None) -> "Node":
@@ -51,6 +53,7 @@ class Node:
             raw = box.get_meta("profile_json")
             profile = _profile_from_json(raw) if raw else default_profile()
         box.set_meta("profile_json", json.dumps(profile.material(), sort_keys=True))
+        box.reapply_tombstones()
         return cls(box, profile, clock)
 
     def close(self) -> None:
@@ -63,8 +66,28 @@ class Node:
         return Node.open(path, clock=clock)
 
     def _tx(self, fn):
-        with self.postbox.transaction():
-            return fn()
+        self._pending_tombstones = []
+        written: list[str] = []
+        self.postbox.begin()
+        try:
+            result = fn()
+            for record in self._pending_tombstones:
+                stamped = dict(record)
+                stamped["id"] = self._new_id("tomb")
+                self.postbox.append_tombstone(stamped)
+                written.append(stamped["id"])
+            self.postbox.commit()
+            return result
+        except Exception:
+            self.postbox.rollback()
+            if written:
+                self.postbox.void_tombstones(written)
+            raise
+        finally:
+            self._pending_tombstones = []
+
+    def _remember(self, record: dict) -> None:
+        self._pending_tombstones.append(record)
 
     def _now(self) -> str:
         return self.clock.now()
@@ -285,6 +308,20 @@ class Node:
                 {"code": decision.code, "event_id": envelope.get("event_id")},
                 self._now(),
             )
+            if decision.code == "admitted" and decision.store_body:
+                self.postbox.insert_receipt(
+                    {
+                        "receipt_id": self._new_id("rcpt"),
+                        "kind": "delivery",
+                        "event_id": envelope["event_id"],
+                        "obligation_id": None,
+                        "body": {
+                            "event_id": envelope["event_id"],
+                            "delivery_state": decision.delivery_state,
+                        },
+                        "created_at": self._now(),
+                    }
+                )
             if (
                 decision.code == "admitted"
                 and envelope.get("event_type") == "WORK_STOP"
@@ -393,6 +430,7 @@ class Node:
                 "agreed_closure": delegation["agreed_closure"],
                 "subtask_id": subtask_id,
                 "scope": scope,
+                "data_class": envelope.get("data_class") or "public-example",
             }
             capsule = build_capsule(
                 {
@@ -635,16 +673,25 @@ class Node:
                 raise OsampError("not_running", "Attempts are recorded only while this work is running.")
             if obligation["budget_spent"] + cost > obligation["budget_ceiling"]:
                 self._enter_hold(obligation, "no_progress", "The budget is spent.")
+                self._remember(
+                    {
+                        "kind": "spent",
+                        "obligation_id": obligation_id,
+                        "spent": obligation["budget_spent"],
+                    }
+                )
                 return {"held": True, "reason": "no_progress"}
             updates = note_attempt(obligation, progress_digest, self.profile.limits)
+            spent = obligation["budget_spent"] + cost
             self.postbox.update_obligation(
                 obligation_id,
                 attempt_count=updates["attempt_count"],
                 same_progress_count=updates["same_progress_count"],
                 last_progress_digest=updates["last_progress_digest"],
-                budget_spent=obligation["budget_spent"] + cost,
+                budget_spent=spent,
                 updated_at=self._now(),
             )
+            self._remember({"kind": "spent", "obligation_id": obligation_id, "spent": spent})
             if updates.get("hold_reason"):
                 fresh = self._load(obligation_id)
                 self._enter_hold(fresh, updates["hold_reason"], hold_sentence(updates["hold_reason"]))
@@ -981,6 +1028,8 @@ class Node:
     def submit_result(self, obligation_id: str, result_digest: str, checks_passed: bool) -> None:
         def run():
             obligation = self._load(obligation_id)
+            if obligation["authority_state"] != "accepted":
+                raise OsampError("result_refused", "A revoked or closed role cannot take a late result.")
             if obligation["execution_state"] in {"held", "review", "stop_pending", "uncertain", "stopped", "closed"}:
                 raise OsampError("result_refused", "A result cannot clear a hold or a review.")
             if not checks_passed:
@@ -1121,6 +1170,7 @@ class Node:
                 updated_at=self._now(),
             )
             self.postbox.audit("revoked", obligation_id, {"obligation_id": obligation_id}, self._now())
+            self._remember({"kind": "revoked", "obligation_id": obligation_id})
 
         self._tx(run)
 
@@ -1404,6 +1454,48 @@ class Node:
             {"disposition": disposition, "obligation_id": obligation["obligation_id"]},
             self._now(),
         )
+        self._remember(
+            {
+                "kind": "closed",
+                "obligation_id": obligation["obligation_id"],
+                "disposition": disposition,
+            }
+        )
+
+    def catch_up(self, obligation_id: str, route: str = "review", requested_fields: list[str] | None = None) -> dict:
+        obligation = self.postbox.get_obligation(obligation_id)
+        if obligation is None or obligation["authority_state"] != "accepted":
+            raise OsampError("catchup_refused", "Catch-up is available only after the role is accepted.")
+        requested = requested_fields or []
+        if any(field in {"transcript", "chain_of_thought"} for field in requested):
+            raise OsampError("catchup_refused", "Catch-up does not include a transcript or private reasoning.")
+        data_class = obligation["limits"].get("data_class", "public-example")
+        if data_class == "private-medical" and route in {"public-news", "press"}:
+            raise OsampError(
+                "catchup_refused",
+                "A private medical note stays off public and press routes.",
+            )
+        return {
+            "summary": None if obligation["objective_deleted"] else obligation.get("objective"),
+            "evidence": list(obligation["capsule"].get("evidence_digests") or []),
+            "uncertainty": obligation["capsule"].get("uncertainty"),
+            "subtask": obligation["limits"].get("subtask_id"),
+            "contract_version": obligation["contract_version"],
+        }
+
+    def snapshot(self, dest: str) -> None:
+        dest_conn = sqlite3.connect(dest)
+        try:
+            self.postbox.conn.backup(dest_conn)
+        finally:
+            dest_conn.close()
+
+    def restore_from_snapshot(self, snapshot_path: str) -> "Node":
+        path = self.postbox.path
+        clock = self.clock
+        self.close()
+        shutil.copyfile(snapshot_path, path)
+        return Node.open(path, clock=clock)
 
     def _refresh_capsule(self, obligation_id: str) -> None:
         obligation = self._load(obligation_id)

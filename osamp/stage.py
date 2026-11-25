@@ -36,6 +36,18 @@ STAGES = {
             "Work contract: Project and Corridor",
         ],
     },
+    "49-3": {
+        "title": "Receipts, catch-up, restore, and the ledger",
+        "review": "REVIEW-3.md",
+        "tests": ["tests.test_records_49_3"],
+        "pieces": [
+            "Separate delivery, acceptance, and completion receipts",
+            "Catch-up limited to an accepted role",
+            "Tombstones that survive a snapshot restore",
+            "Late results and revoked work stay refused",
+            "Conformance ledger for all 29 checks",
+        ],
+    },
 }
 
 

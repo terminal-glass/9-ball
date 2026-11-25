@@ -1152,7 +1152,7 @@ def check_wp12(tmp: Path) -> tuple[str, str]:
             "payload_digest": claimed,
             "expires_at": case.get("expires_at"),
         }
-        if case.get("signature"):
+        if "signature" in case:
             envelope["signature"] = case["signature"]
         existing = None
         if case.get("existing"):

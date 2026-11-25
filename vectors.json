@@ -27,6 +27,24 @@
       "expect": "signature_not_adopted"
     },
     {
+      "name": "empty signature field refused",
+      "event_type": "WORK_OFFER",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "signature": "",
+      "expect": "signature_not_adopted"
+    },
+    {
+      "name": "false signature field refused",
+      "event_type": "WORK_OFFER",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "signature": false,
+      "expect": "signature_not_adopted"
+    },
+    {
       "name": "digest mismatch",
       "event_type": "WORK_OFFER",
       "known_sender": true,

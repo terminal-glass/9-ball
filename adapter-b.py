@@ -67,7 +67,7 @@ def _expired(expires_at: str | None, now: str) -> bool:
 
 
 def decide(envelope: dict, known_sender: bool, now: str, existing: dict | None, payload_too_big: bool) -> str:
-    if envelope.get("signature"):
+    if "signature" in envelope:
         return "signature_not_adopted"
     if payload_too_big:
         return "payload_too_big"

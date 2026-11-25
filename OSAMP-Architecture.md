@@ -135,4 +135,4 @@ python3 -m unittest discover -s tests -v
 python3 -m osamp.conformance
 ```
 
-On the run recorded after stage 49-6: 31 unit tests OK; conformance totals 28 pass, 1 partial, 0 pending, 0 fail. The partial check is WP-12.
+On the run recorded after the review fixes: 40 unit tests OK; conformance totals 28 pass, 1 partial, 0 pending, 0 fail. The partial check is WP-12. Adapter B passes the shared envelope vectors, including an empty or false signature field, and does not implement the other checks.

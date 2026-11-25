@@ -1,0 +1,100 @@
+{
+  "note": "Shared local vectors for the reference gate and adapter-b.py. Not a live interoperability test.",
+  "cases": [
+    {
+      "name": "unknown sender",
+      "event_type": "WORK_OFFER",
+      "known_sender": false,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "expect": "unknown_sender"
+    },
+    {
+      "name": "unknown event",
+      "event_type": "MAKE_IT_SO",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "expect": "unknown_event"
+    },
+    {
+      "name": "signature field refused",
+      "event_type": "WORK_OFFER",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "signature": "not-a-suite",
+      "expect": "signature_not_adopted"
+    },
+    {
+      "name": "empty signature field refused",
+      "event_type": "WORK_OFFER",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "signature": "",
+      "expect": "signature_not_adopted"
+    },
+    {
+      "name": "false signature field refused",
+      "event_type": "WORK_OFFER",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "signature": false,
+      "expect": "signature_not_adopted"
+    },
+    {
+      "name": "digest mismatch",
+      "event_type": "WORK_OFFER",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "payload_digest": "sha256:not-the-body",
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "expect": "digest_mismatch"
+    },
+    {
+      "name": "admitted offer",
+      "event_type": "WORK_OFFER",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "expect": "admitted"
+    },
+    {
+      "name": "expired offer",
+      "event_type": "WORK_OFFER",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-23T00:00:00+00:00",
+      "expect": "expired"
+    },
+    {
+      "name": "duplicate",
+      "event_type": "WORK_OFFER",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "existing": true,
+      "expect": "duplicate"
+    },
+    {
+      "name": "changed body under the same id",
+      "event_type": "WORK_OFFER",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "existing_digest": "sha256:other",
+      "expect": "integrity_failure"
+    },
+    {
+      "name": "payload too big",
+      "event_type": "WORK_OFFER",
+      "known_sender": true,
+      "payload": {"text": "hello"},
+      "expires_at": "2026-11-25T00:00:00+00:00",
+      "payload_too_big": true,
+      "expect": "payload_too_big"
+    }
+  ]
+}

@@ -72,6 +72,18 @@ STAGES = {
             "Recovery after a killed process",
         ],
     },
+    "49-6": {
+        "title": "Shared vectors, a second small gate, and the requirement trace",
+        "review": "REVIEW-6.md",
+        "tests": ["tests.test_stage_49_6"],
+        "pieces": [
+            "Shared envelope vectors",
+            "Independent adapter B",
+            "Comparison of adapter B with the reference gate",
+            "Requirement label on every conformance check",
+            "Honest partial result for a second implementation",
+        ],
+    },
 }
 
 

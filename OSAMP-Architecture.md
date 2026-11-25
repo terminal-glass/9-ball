@@ -6,7 +6,7 @@ This paper is for people who need to understand the software without an informat
 
 ## Where this sits
 
-In the installer line this work is stage 49, the 9-Ball controller. This repository keeps the release-folder shape: `49.sh` calls `49-1.sh` through `49-5.sh` in order. macOS and Windows have matching entry files. Nothing here calls stage 9, and this copy has not been placed into the separate installer repository.
+In the installer line this work is stage 49, the 9-Ball controller. This repository keeps the release-folder shape: `49.sh` calls `49-1.sh` through `49-6.sh` in order. macOS and Windows have matching entry files. Nothing here calls stage 9, and this copy has not been placed into the separate installer repository.
 
 ## What this is
 
@@ -122,7 +122,7 @@ Statuses below are from `python3 -m osamp.conformance` and `python3 -m unittest 
 | B-TRIBE01, WP-05 | Tribe help has its own budget. Membership is not a job. | `osamp/agreements.py` | WP-05 | Pass, local queue only |
 | B-CLAN01, WP-06 | A bridge needs a human approval. An endorsement does not open a route. | `osamp/agreements.py` | WP-06 | Pass, nothing transmitted |
 | B-DATA02, WP-11 | Catch-up shows only the authorized minimum. | `osamp/node.py` `catch_up` | WP-11 | Pass, local fields only |
-| B-MSG05, WP-12 | A second implementation passes the same checks. | — | WP-12 | Pending |
+| B-MSG05, WP-12 | A second program passes the shared local envelope vectors. | `adapter-b.py` | WP-12 | Partial. Not a full second product and not an interoperability claim. |
 | B-TABLE01, WP-13 | Sitting at a Table requires an accepted role. | `osamp/agreements.py` | WP-13 | Pass |
 | B-AUTH01, WP-14 | The five agreements do not grant each other's powers. | `osamp/agreements.py` | WP-14 | Pass |
 | B-COR01, B-COR02, WP-15 | A Corridor follows its stages, stops when solved, and does not reset its budget. | `osamp/agreements.py` | WP-15 | Pass |
@@ -135,4 +135,4 @@ python3 -m unittest discover -s tests -v
 python3 -m osamp.conformance
 ```
 
-On the run recorded after stage 49-5: 28 unit tests OK; conformance totals 28 pass, 0 partial, 1 pending, 0 fail. The remaining pending check is a second implementation.
+On the run recorded after the review fixes: 40 unit tests OK; conformance totals 28 pass, 1 partial, 0 pending, 0 fail. The partial check is WP-12. Adapter B passes the shared envelope vectors, including an empty or false signature field, and does not implement the other checks.

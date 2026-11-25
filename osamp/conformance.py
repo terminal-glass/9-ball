@@ -7,6 +7,7 @@ for the behavior this copy actually demonstrates.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import tempfile
 from dataclasses import dataclass
@@ -17,6 +18,7 @@ from osamp.auth import mac
 from osamp.canonical import digest
 from osamp.clock import Clock
 from osamp.covenant import require_fast_forward
+from osamp.gate import screen
 from osamp.errors import OsampError
 from osamp.node import Node
 from osamp.profile import default_profile
@@ -1125,6 +1127,110 @@ def check_pending(_tmp: Path, reason: str) -> tuple[str, str]:
     return "pending", reason
 
 
+def check_wp12(tmp: Path) -> tuple[str, str]:
+    import importlib.util
+
+    root = Path(__file__).resolve().parents[1]
+    source = (root / "adapter-b.py").read_text(encoding="utf-8")
+    if "import osamp" in source or "from osamp" in source:
+        raise AssertionError("adapter B imports the reference program")
+    spec = importlib.util.spec_from_file_location("adapter_b_vectors", root / "adapter-b.py")
+    if spec is None or spec.loader is None:
+        raise AssertionError("adapter B could not be loaded")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if module.digest({"text": "hello"}) != digest({"text": "hello"}):
+        raise AssertionError("checksums differ")
+    cases = json.loads((root / "vectors.json").read_text(encoding="utf-8"))["cases"]
+    now = "2026-11-24T00:00:00+00:00"
+    for case in cases:
+        payload = case["payload"]
+        claimed = case.get("payload_digest") or digest(payload)
+        envelope = {
+            "event_type": case["event_type"],
+            "payload": payload,
+            "payload_digest": claimed,
+            "expires_at": case.get("expires_at"),
+        }
+        if "signature" in case:
+            envelope["signature"] = case["signature"]
+        existing = None
+        if case.get("existing"):
+            existing = {"payload_digest": claimed, "delivery_state": "delivered", "role_state": "offered"}
+        if case.get("existing_digest"):
+            existing = {
+                "payload_digest": case["existing_digest"],
+                "delivery_state": "delivered",
+                "role_state": "offered",
+            }
+        reference = screen(
+            envelope,
+            known_sender=case["known_sender"],
+            now=now,
+            existing=existing,
+            payload_too_big=bool(case.get("payload_too_big")),
+        )
+        other = module.decide(
+            envelope,
+            case["known_sender"],
+            now,
+            existing,
+            bool(case.get("payload_too_big")),
+        )
+        if reference.code != case["expect"] or other != case["expect"]:
+            raise AssertionError(f"{case['name']}: reference={reference.code} adapter={other}")
+    ledger = module.TinyLedger()
+    ledger.accept("offer-1")
+    restored = module.TinyLedger.load(ledger.dump())
+    if restored.rows["offer-1"]["authority"] != "accepted":
+        raise AssertionError("adapter B forgot an acceptance")
+    if restored.request_stop("offer-1", "worker-b") != "stop_pending":
+        raise AssertionError("stop was confirmed too early")
+    if restored.acknowledge_stop("offer-1", "someone-else") != "stop_pending":
+        raise AssertionError("the wrong peer confirmed the stop")
+    if restored.acknowledge_stop("offer-1", "worker-b") != "stopped":
+        raise AssertionError("the named peer did not confirm the stop")
+    return (
+        "partial",
+        f"Adapter B passed {len(cases)} shared envelope vectors and its own small hold record "
+        "without importing the reference program. It does not perform the other conformance checks. "
+        "A second organization did not run it. This is not an interoperability claim.",
+    )
+
+
+REQUIREMENTS = {
+    "WP-01": "B-PEER01, B-GATE02",
+    "WP-02": "B-GATE02",
+    "WP-03": "B-TABLE01, P-GATE04",
+    "WP-04": "B-CAP01, B-CAP02",
+    "WP-05": "B-TRIBE01",
+    "WP-06": "B-CLAN01, B-DATA01",
+    "WP-07": "P-GATE04, P-MSG04",
+    "WP-08": "B-CTRL02, B-QUEUE01",
+    "WP-09": "B-CTRL02",
+    "WP-10": "B-QUEUE04",
+    "WP-11": "B-DATA02",
+    "WP-12": "B-MSG05",
+    "WP-13": "B-TABLE01",
+    "WP-14": "B-AUTH01",
+    "WP-15": "B-COR01, B-COR02",
+    "WP-16": "B-COR02, P-Z13",
+    "WP-17": "B-CTRL01, B-CTRL02",
+    "WP-18": "B-CTRL01",
+    "WP-19": "B-EVID01, P-Z03",
+    "WP-20": "B-CTRL01",
+    "WP-21": "B-AUTH01",
+    "CZ-22": "P-Z01, P-Z02",
+    "CZ-23": "P-Z03, B-EVID01",
+    "CZ-24": "P-Z03, P-Z04",
+    "CZ-25": "P-Z05, P-Z08",
+    "CZ-26": "P-Z10, B-RET01",
+    "CZ-27": "P-Z11, P-Z12",
+    "CZ-28": "P-Z05, P-GATE04",
+    "CZ-29": "P-Z09",
+}
+
+
 CHECKS = [
     ("WP-01", "Unknown sender is not relayed", check_wp01),
     ("WP-02", "Unaccepted invitation uses no model", check_wp02),
@@ -1137,7 +1243,7 @@ CHECKS = [
     ("WP-09", "Unreachable stop stays STOP_PENDING", check_wp09),
     ("WP-10", "TTL deletion covers stored copies", check_wp10),
     ("WP-11", "Catch-up exposes only authorized context", check_wp11),
-    ("WP-12", "A second adapter passes the same vectors", lambda tmp: check_pending(tmp, "Only this Python copy exists. No second implementation was run.")),
+    ("WP-12", "A second adapter passes the same vectors", check_wp12),
     ("WP-13", "Table membership requires role acceptance", check_wp13),
     ("WP-14", "Five agreement categories have separate scopes", check_wp14),
     ("WP-15", "Corridor stages do not loop or reset budgets", check_wp15),

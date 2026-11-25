@@ -930,6 +930,11 @@ def check_wp11(tmp: Path) -> tuple[str, str]:
     node, _keys = _boot(tmp)
     _offer(node, "public")
     assert node.postbox.obligation_by_event("public") is None
+    try:
+        node.catch_up("not-accepted-yet", "review")
+        raise AssertionError("catch-up ran before acceptance")
+    except OsampError as exc:
+        assert exc.code == "catchup_refused"
     public_id = _accept(node, "public")
     package = node.catch_up(public_id, "review", ["summary"])
     assert set(package) == {"summary", "evidence", "uncertainty", "subtask", "contract_version"}

@@ -67,12 +67,24 @@ class Node:
 
     def _tx(self, fn):
         self._pending_tombstones = []
-        with self.postbox.transaction():
+        written: list[str] = []
+        self.postbox.begin()
+        try:
             result = fn()
-        for record in self._pending_tombstones:
-            self.postbox.append_tombstone(record)
-        self._pending_tombstones = []
-        return result
+            for record in self._pending_tombstones:
+                stamped = dict(record)
+                stamped["id"] = self._new_id("tomb")
+                self.postbox.append_tombstone(stamped)
+                written.append(stamped["id"])
+            self.postbox.commit()
+            return result
+        except Exception:
+            self.postbox.rollback()
+            if written:
+                self.postbox.void_tombstones(written)
+            raise
+        finally:
+            self._pending_tombstones = []
 
     def _remember(self, record: dict) -> None:
         self._pending_tombstones.append(record)
@@ -1451,10 +1463,10 @@ class Node:
         )
 
     def catch_up(self, obligation_id: str, route: str = "review", requested_fields: list[str] | None = None) -> dict:
-        obligation = self._load(obligation_id)
-        requested = requested_fields or []
-        if obligation["authority_state"] != "accepted":
+        obligation = self.postbox.get_obligation(obligation_id)
+        if obligation is None or obligation["authority_state"] != "accepted":
             raise OsampError("catchup_refused", "Catch-up is available only after the role is accepted.")
+        requested = requested_fields or []
         if any(field in {"transcript", "chain_of_thought"} for field in requested):
             raise OsampError("catchup_refused", "Catch-up does not include a transcript or private reasoning.")
         data_class = obligation["limits"].get("data_class", "public-example")

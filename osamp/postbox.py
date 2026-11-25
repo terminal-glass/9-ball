@@ -197,6 +197,8 @@ class Postbox:
     def commit(self) -> None:
         if not self._in_tx:
             raise OsampError("transaction", "There is no save in progress.")
+        if getattr(self, "crash_before_sql_commit", False):
+            os._exit(99)
         if self._fail_commits:
             self._fail_commits -= 1
             raise OsampError(
@@ -678,16 +680,35 @@ class Postbox:
             handle.flush()
             os.fsync(handle.fileno())
 
+    def void_tombstones(self, tombstone_ids: list[str]) -> None:
+        if not tombstone_ids:
+            return
+        with open(self.tombstone_path(), "a", encoding="utf-8") as handle:
+            for tombstone_id in tombstone_ids:
+                handle.write(json.dumps({"void": tombstone_id}, sort_keys=True) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+
     def reapply_tombstones(self) -> None:
         path = self.tombstone_path()
         if not os.path.exists(path):
             return
         with open(path, encoding="utf-8") as handle:
             lines = handle.readlines()
+        voided = set()
+        records = []
         for line in lines:
             if not line.strip():
                 continue
             record = json.loads(line)
+            if record.get("void"):
+                voided.add(record["void"])
+            else:
+                records.append(record)
+        scrubbed = False
+        for record in records:
+            if record.get("id") in voided:
+                continue
             obligation = self.get_obligation(record.get("obligation_id", ""))
             if obligation is None:
                 continue
@@ -707,15 +728,31 @@ class Postbox:
                     execution_state=execution,
                     updated_at=obligation["updated_at"],
                 )
-            elif record["kind"] == "closed" and obligation["execution_state"] != "closed":
+            elif record["kind"] == "closed":
+                capsule = dict(obligation.get("capsule") or {})
+                if (
+                    obligation["execution_state"] == "closed"
+                    and not obligation.get("objective")
+                    and not capsule.get("objective")
+                ):
+                    continue
+                capsule["objective"] = None
                 self.update_obligation(
                     obligation["obligation_id"],
                     authority_state="closed",
                     execution_state="closed",
                     objective=None,
                     objective_deleted=True,
+                    capsule=capsule,
+                    closure={
+                        "disposition": record.get("disposition") or "closed",
+                        "at": obligation["updated_at"],
+                    },
                     updated_at=obligation["updated_at"],
                 )
+                scrubbed = True
+        if scrubbed:
+            self.conn.execute("VACUUM")
 
     def trim_quarantine(self, keep: int) -> None:
         rows = self.conn.execute(

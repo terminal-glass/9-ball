@@ -105,8 +105,14 @@ class AgreementBook:
         )
 
     def _accept(self, agreement_id: str, person_id: str, key: bytes, action: str) -> dict:
+        self.node._require_work_enabled()
         self._require_key(person_id, key)
         agreement = self._get(agreement_id)
+        if agreement["status"] != "offered":
+            raise OsampError(
+                "agreement_not_offered",
+                "Only an open offer can be accepted. A revoked agreement stays revoked.",
+            )
         payload = {"action": action, "agreement_id": agreement_id, "person_id": person_id}
         tag = mac(key, payload)
         body = dict(agreement["body"])
@@ -249,6 +255,7 @@ class AgreementBook:
 
     def approve_bridge(self, bridge_id: str, person_id: str, key: bytes) -> None:
         def run():
+            self.node._require_work_enabled()
             self._require_key(person_id, key)
             row = self.node.postbox.conn.execute(
                 "SELECT * FROM bridges WHERE bridge_id=?", (bridge_id,)
@@ -383,10 +390,15 @@ class AgreementBook:
     def record_project_check(self, agreement_id: str, check_id: str, passed: bool) -> None:
         def run():
             agreement = self._require_project(agreement_id)
+            if agreement["status"] == "closed" or agreement["body"].get("outcome") == "completed":
+                raise OsampError(
+                    "complete_refused",
+                    "A completed project cannot be reopened by recording another check.",
+                )
             body = dict(agreement["body"])
             body["checks"][check_id] = passed
             body["spent"] = body["spent"]  # a check does not refill the budget
-            self._save(agreement_id, "accepted", body)
+            self._save(agreement_id, agreement["status"], body)
 
         self._tx(run)
 
@@ -452,6 +464,13 @@ class AgreementBook:
             if body["outcome"] in {"solved", "human_satisfied", "held", "closed"}:
                 return {"refused": "corridor_closed"}
             stage = body["stages"][body["index"]]
+            if stage["status"] == "accepted":
+                return {
+                    "stage_id": stage["stage_id"],
+                    "recipient": stage["recipient"],
+                    "spent": body["spent"],
+                    "already_accepted": True,
+                }
             if body["spent"] + stage["cost"] > body["budget"]:
                 body["outcome"] = "held"
                 self._save(agreement_id, "accepted", body)
@@ -561,6 +580,7 @@ class AgreementBook:
 
     def human_satisfied(self, agreement_id: str, person_id: str, key: bytes) -> str:
         def run():
+            self.node._require_work_enabled()
             self._require_key(person_id, key)
             agreement = self._require_corridor(agreement_id)
             payload = {"action": "human_satisfied", "agreement_id": agreement_id, "person_id": person_id}
@@ -613,8 +633,18 @@ class AgreementBook:
         if peer is None or peer["status"] != "accepted":
             raise OsampError("peer_required", "Accepting work needs an accepted peer agreement.")
         allowed_types = set(peer["body"].get("message_types") or [])
-        if allowed_types and envelope.get("event_type") not in allowed_types:
-            raise OsampError("outside_peer", "That message type is outside the peer agreement.")
+        if envelope.get("event_type") not in allowed_types:
+            raise OsampError(
+                "outside_peer",
+                "That message type is outside the peer agreement. An empty list allows nothing.",
+            )
+        allowed_data = set(peer["body"].get("data_classes") or [])
+        data_class = envelope.get("data_class") or "public-example"
+        if data_class not in allowed_data:
+            raise OsampError(
+                "outside_peer",
+                "That data class is outside the peer agreement. An empty list allows nothing.",
+            )
         if not table_id:
             return
         pending = self._pending_role

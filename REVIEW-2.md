@@ -68,4 +68,4 @@ Still partial: WP-04, WP-10, CZ-28, CZ-29. Still pending: WP-11 catch-up, WP-12 
 1. Is a bridge allowed to name a destination that was not in the original clan list, as this slice does, or must the clan be amended first?
 2. Should a proposed handoff stay incomplete until the recipient accepts and the original person releases it? This slice only records the proposal.
 3. Are the project checks a list of names supplied by the human, or do they need to be tied to artifacts?
-4. Confirm that tribe, clan, and table acceptance still require the Contract Zero acknowledgment from submission 1. They do in this code, because work acceptance goes through that gate. Simply recording a peer or tribe does not start execution.
+4. Decision: accepting a peer, tribe, clan, bridge, or work agreement requires the current Contract Zero acknowledgment. A proposal can be recorded before that acknowledgment. Table role acceptance already went through the work gate. This replaces the earlier note, which said those acceptances required the acknowledgment when they did not.

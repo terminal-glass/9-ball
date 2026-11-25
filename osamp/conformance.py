@@ -390,7 +390,10 @@ def check_wp15(tmp: Path) -> tuple[str, str]:
     book.accept_work(looped, "human-example", keys["human"])
     book.offer_corridor_stage(looped)
     assert book.accept_corridor_stage(looped, "a")["spent"] == 2
-    assert book.accept_corridor_stage(looped, "a")["repeated"] is True
+    book.offer_corridor_stage(looped)
+    assert book._get(looped)["body"]["stages"][0]["status"] == "accepted"
+    repeated = book.accept_corridor_stage(looped, "a")
+    assert repeated["repeated"] is True
     assert book._get(looped)["body"]["spent"] == 2
     book.advance_corridor(looped)
     try:
@@ -411,7 +414,8 @@ def check_wp15(tmp: Path) -> tuple[str, str]:
     assert called == [] and node.model_calls() == 0
     return (
         "pass",
-        "A solved corridor took no further stage. Repeating a stage did not reset its spend. "
+        "A solved corridor took no further stage. Offering an accepted stage again did not reset it "
+        "or double its spend. "
         "Returning to an earlier stage held the corridor with the same spend. A decline did not add a recipient.",
     )
 
